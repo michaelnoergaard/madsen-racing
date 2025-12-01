@@ -29,7 +29,12 @@
       "Bash(netstat:*)",
       "Bash(ss:*)",
       "Bash(npx pm2 restart:*)",
-      "Bash(gh repo create:*)"
+      "Bash(gh repo create:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(wget:*)",
+      "Bash(tar:*)",
+      "Bash(export:*)",
+      "Bash(gh auth status:*)"
     ],
     "deny": [],
     "ask": []
