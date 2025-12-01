@@ -9,7 +9,9 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "setup:contentful": "node scripts/setup-contentful.js"
+    "setup:contentful": "node scripts/setup-contentful.js",
+    "docker:build": "docker build -t madsen-racing .",
+    "docker:run": "docker run -p 4321:4321 madsen-racing"
   },
   "dependencies": {
     "@astrojs/check": "",
