@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap');
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-mr-black text-white font-sans antialiased;
+  }
+  
+  /* Custom selection color */
+  ::selection {
+    @apply bg-mr-yellow text-mr-black;
+  }
+}
+
+@layer components {
+  /* Button styles */
+  .btn-primary {
+    @apply px-8 py-3 bg-mr-yellow text-mr-black font-bold rounded-lg 
+           hover:bg-mr-yellow/90 transition-all transform hover:scale-105
+           inline-flex items-center justify-center gap-2;
+  }
+  
+  .btn-secondary {
+    @apply px-8 py-3 bg-transparent border-2 border-mr-purple text-white 
+           font-bold rounded-lg hover:bg-mr-purple/20 transition-all
+           inline-flex items-center justify-center gap-2;
+  }
+  
+  .btn-outline {
+    @apply px-6 py-3 border border-mr-gray-600 text-mr-gray-300 rounded-lg 
+           hover:border-mr-yellow hover:text-mr-yellow transition-all
+           inline-flex items-center justify-center gap-2;
+  }
+  
+  /* Card styles */
+  .card {
+    @apply bg-gradient-to-br from-mr-gray-800 to-mr-gray-900 
+           border border-mr-gray-700 rounded-xl p-6
+           hover:border-mr-yellow/50 transition-all;
+  }
+  
+  .card-highlight {
+    @apply bg-gradient-to-r from-mr-yellow/10 to-transparent 
+           border border-mr-yellow/50 rounded-xl p-4;
+  }
+  
+  /* Stat card */
+  .stat-card {
+    @apply card text-center group;
+  }
+  
+  .stat-value {
+    @apply text-4xl md:text-5xl font-black text-mr-yellow mb-2 
+           group-hover:scale-110 transition-transform;
+  }
+  
+  .stat-label {
+    @apply text-mr-gray-400 text-sm tracking-wider;
+  }
+  
+  /* Section styles */
+  .section {
+    @apply py-16 md:py-24;
+  }
+  
+  .section-title {
+    @apply text-3xl md:text-4xl font-black mb-2 font-display;
+  }
+  
+  .section-subtitle {
+    @apply text-mr-gray-400 text-base;
+  }
+  
+  /* Navigation */
+  .nav-link {
+    @apply px-3 py-2 text-xs font-medium tracking-wider transition-all duration-200 rounded
+           text-mr-gray-300 hover:text-white hover:bg-white/5;
+  }
+  
+  .nav-link-active {
+    @apply text-mr-yellow bg-mr-yellow/10;
+  }
+  
+  /* Racing stripe decoration */
+  .racing-stripe {
+    @apply absolute top-0 w-1 h-full bg-gradient-to-b from-transparent via-mr-yellow/20 to-transparent;
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-mr-yellow to-mr-purple bg-clip-text text-transparent;
+  }
+  
+  /* Countdown box */
+  .countdown-box {
+    @apply w-14 h-14 bg-mr-gray-900 border border-mr-gray-700 rounded-lg 
+           flex items-center justify-center;
+  }
+  
+  .countdown-value {
+    @apply text-2xl font-bold text-mr-yellow;
+  }
+  
+  .countdown-label {
+    @apply text-[10px] text-mr-gray-500 tracking-wider;
+  }
+  
+  /* Social icon */
+  .social-icon {
+    @apply w-10 h-10 bg-mr-gray-900 rounded-lg flex items-center justify-center 
+           text-mr-gray-400 hover:text-mr-yellow hover:bg-mr-yellow/10 transition-all;
+  }
+  
+  /* Floating social bar */
+  .floating-social {
+    @apply fixed right-4 top-1/2 transform -translate-y-1/2 z-40 
+           hidden md:flex flex-col gap-2;
+  }
+  
+  .floating-social-btn {
+    @apply w-10 h-10 bg-mr-gray-900/80 backdrop-blur-sm border border-mr-gray-700 
+           rounded-lg flex items-center justify-center text-mr-gray-400 
+           hover:text-mr-yellow hover:border-mr-yellow transition-all;
+  }
+  
+  /* Instagram grid */
+  .instagram-grid {
+    @apply grid grid-cols-2 md:grid-cols-3 gap-4;
+  }
+  
+  .instagram-post {
+    @apply aspect-square rounded-xl overflow-hidden relative group cursor-pointer;
+  }
+  
+  .instagram-overlay {
+    @apply absolute inset-0 flex items-center justify-center opacity-0 
+           group-hover:opacity-100 transition-all;
+  }
+  
+  /* Race card */
+  .race-card {
+    @apply flex items-center gap-4 p-4 rounded-xl border transition-all
+           bg-mr-gray-900 border-mr-gray-700 hover:border-mr-gray-600;
+  }
+  
+  .race-card-highlight {
+    @apply bg-gradient-to-r from-mr-yellow/10 to-transparent border-mr-yellow/50;
+  }
+  
+  .race-date {
+    @apply w-20 text-center py-2 rounded-lg bg-mr-gray-800;
+  }
+  
+  .race-date-highlight {
+    @apply bg-mr-yellow text-mr-black;
+  }
+  
+  /* Sponsor logo container */
+  .sponsor-logo {
+    @apply w-28 h-20 rounded-lg flex items-center justify-center 
+           transition-all hover:scale-105;
+  }
+  
+  .sponsor-logo-guld {
+    @apply bg-gradient-to-br from-mr-yellow/20 to-mr-yellow/5 border border-mr-yellow/30;
+  }
+  
+  .sponsor-logo-sølv {
+    @apply bg-gradient-to-br from-mr-gray-400/20 to-mr-gray-400/5 border border-mr-gray-400/30;
+  }
+  
+  .sponsor-logo-bronze {
+    @apply bg-mr-gray-900 border border-mr-gray-700;
+  }
+}
+
+@layer utilities {
+  /* Animations */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  /* Backdrop blur fallback */
+  .backdrop-blur-fallback {
+    @apply bg-mr-black/95;
+  }
+  
+  @supports (backdrop-filter: blur(12px)) {
+    .backdrop-blur-fallback {
+      @apply bg-mr-black/80 backdrop-blur-md;
+    }
+  }
+}

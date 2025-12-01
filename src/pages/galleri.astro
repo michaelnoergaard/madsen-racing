@@ -1,0 +1,106 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Placeholder data - will be replaced with Contentful/Instagram data
+const categories = ['ALLE', 'ACTION', 'BEHIND THE SCENES', 'VIDEO'];
+---
+
+<Layout 
+  title="Galleri" 
+  description="Se billeder og videoer fra Anton Madsens karting-karriere - action, behind the scenes og højdepunkter."
+>
+  <!-- Hero -->
+  <section class="pt-32 pb-16 bg-mr-gradient-dark">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-black mb-4 font-display">
+        GALLERI & <span class="text-mr-yellow">MEDIA</span>
+      </h1>
+      <p class="text-mr-gray-400 max-w-2xl mx-auto">
+        Billeder og videoer fra banen, paddocken og bag kulisserne.
+      </p>
+    </div>
+  </section>
+
+  <!-- Filter -->
+  <section class="py-8 bg-mr-black border-b border-mr-gray-800">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="flex flex-wrap justify-center gap-2">
+        {categories.map((cat, i) => (
+          <button 
+            class:list={[
+              'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+              i === 0 ? 'bg-mr-yellow text-mr-black' : 'bg-mr-gray-800 text-mr-gray-400 hover:bg-mr-gray-700'
+            ]}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Instagram Grid -->
+  <section class="section bg-mr-black">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+        <svg class="w-5 h-5 text-mr-yellow" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/>
+        </svg>
+        Seneste fra Instagram
+      </h2>
+      
+      <!-- Placeholder grid -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div class="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-mr-yellow/20 to-mr-purple/20 border border-mr-gray-700 flex items-center justify-center group cursor-pointer hover:border-mr-yellow/50 transition-all">
+            <div class="text-center text-mr-gray-500 group-hover:text-mr-gray-300 transition-colors">
+              <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/>
+              </svg>
+              <p class="text-xs">Post {i + 1}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <p class="text-center text-mr-gray-500 text-sm mt-8">
+        💡 Integrer Elfsight eller Instagram API for live feed
+      </p>
+    </div>
+  </section>
+
+  <!-- Press Photos -->
+  <section class="section bg-mr-gray-900/50">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-2xl font-black mb-2">PRESSEFOTOS</h2>
+      <p class="text-mr-gray-400 mb-8">Højopløselige billeder til presse og medier</p>
+      
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="card text-center">
+          <div class="aspect-video bg-mr-gray-800 rounded-lg mb-4 flex items-center justify-center">
+            <span class="text-mr-gray-500">Portræt</span>
+          </div>
+          <button class="btn-outline w-full text-sm">
+            Download (5MB)
+          </button>
+        </div>
+        <div class="card text-center">
+          <div class="aspect-video bg-mr-gray-800 rounded-lg mb-4 flex items-center justify-center">
+            <span class="text-mr-gray-500">Action Shot</span>
+          </div>
+          <button class="btn-outline w-full text-sm">
+            Download (8MB)
+          </button>
+        </div>
+        <div class="card text-center">
+          <div class="aspect-video bg-mr-gray-800 rounded-lg mb-4 flex items-center justify-center">
+            <span class="text-mr-gray-500">Kart</span>
+          </div>
+          <button class="btn-outline w-full text-sm">
+            Download (6MB)
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

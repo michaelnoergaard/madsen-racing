@@ -1,0 +1,40 @@
+---
+interface Props {
+  name: string;
+  tier: 'guld' | 'sølv' | 'bronze' | string;
+  logo?: string;
+  website?: string;
+}
+
+const { name, tier, logo, website } = Astro.props;
+
+const tierClass = {
+  guld: 'sponsor-logo-guld',
+  sølv: 'sponsor-logo-sølv',
+  bronze: 'sponsor-logo-bronze',
+}[tier] || 'sponsor-logo-bronze';
+---
+
+{website ? (
+  <a 
+    href={website}
+    target="_blank"
+    rel="noopener noreferrer"
+    class:list={['sponsor-logo', tierClass]}
+    title={name}
+  >
+    {logo ? (
+      <img src={logo} alt={name} class="max-w-full max-h-full object-contain p-2" />
+    ) : (
+      <span class="text-mr-gray-500 text-xs text-center px-2">{name}</span>
+    )}
+  </a>
+) : (
+  <div class:list={['sponsor-logo', tierClass]} title={name}>
+    {logo ? (
+      <img src={logo} alt={name} class="max-w-full max-h-full object-contain p-2" />
+    ) : (
+      <span class="text-mr-gray-500 text-xs text-center px-2">{name}</span>
+    )}
+  </div>
+)}

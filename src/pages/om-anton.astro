@@ -1,0 +1,120 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// TODO: Replace with Contentful data
+const driverInfo = {
+  name: 'Anton Madsen',
+  age: 14,
+  city: 'Danmark',
+  team: 'Madsen Racing',
+  class: 'OK Junior',
+  kartBrand: 'Tony Kart',
+  number: 22,
+  startYear: 2019
+};
+---
+
+<Layout 
+  title="Om Anton" 
+  description="Lær Anton Madsen at kende - 14-årig dansk karting-kører med drømme om professionel motorsport."
+>
+  <!-- Hero -->
+  <section class="pt-32 pb-16 bg-mr-gradient-dark">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div class="animate-fade-in">
+          <h1 class="text-4xl md:text-5xl font-black mb-4 font-display">
+            HEJ, JEG ER <span class="text-mr-yellow">ANTON</span>
+          </h1>
+          <p class="text-mr-gray-300 text-lg mb-6">
+            Jeg er en {driverInfo.age}-årig karting-kører fra Danmark med en brændende passion for motorsport. 
+            Siden jeg satte mig bag rattet første gang i {driverInfo.startYear}, har jeg drømt om at nå toppen.
+          </p>
+          <p class="text-mr-gray-400 mb-8">
+            Hver gang jeg trækker i hjelmen og kører ud på banen, giver jeg alt hvad jeg har. 
+            Det handler ikke bare om at vinde - det handler om at blive bedre for hver eneste omgang, 
+            lære af fejlene og aldrig give op.
+          </p>
+          <div class="flex gap-4">
+            <a href="/sponsorer" class="btn-primary">
+              STØT MIN REJSE
+            </a>
+            <a href="/resultater" class="btn-secondary">
+              SE RESULTATER
+            </a>
+          </div>
+        </div>
+        
+        <!-- Placeholder for driver image -->
+        <div class="aspect-square bg-gradient-to-br from-mr-yellow/20 to-mr-purple/20 rounded-2xl flex items-center justify-center border border-mr-gray-700">
+          <div class="text-center text-mr-gray-500">
+            <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <p class="text-sm">Portræt af Anton</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Facts -->
+  <section class="section bg-mr-black">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="section-title text-center mb-12">FAKTA OM <span class="text-mr-yellow">ANTON</span></h2>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">ALDER</div>
+          <div class="text-2xl font-bold">{driverInfo.age} år</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">NUMMER</div>
+          <div class="text-2xl font-bold">#{driverInfo.number}</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">KLASSE</div>
+          <div class="text-2xl font-bold">{driverInfo.class}</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">TEAM</div>
+          <div class="text-2xl font-bold">{driverInfo.team}</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">KART</div>
+          <div class="text-2xl font-bold">{driverInfo.kartBrand}</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">STARTÅR</div>
+          <div class="text-2xl font-bold">{driverInfo.startYear}</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">LAND</div>
+          <div class="text-2xl font-bold">🇩🇰 Danmark</div>
+        </div>
+        <div class="card text-center">
+          <div class="text-mr-yellow text-sm mb-1">DRØM</div>
+          <div class="text-2xl font-bold">F1 🏆</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dream Section -->
+  <section class="section bg-mr-gray-900/50">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <h2 class="section-title mb-8">MIN <span class="text-mr-yellow">DRØM</span></h2>
+      
+      <blockquote class="text-2xl md:text-3xl text-mr-gray-300 italic mb-8">
+        "Mit mål er at nå Formula 1. Det er en lang vej, men jeg arbejder hårdt hver dag 
+        for at komme tættere på drømmen."
+      </blockquote>
+      
+      <p class="text-mr-gray-400">
+        Vejen til toppen starter med karting. Herfra går turen gennem Formula 4, Formula 3, 
+        Formula 2 - og forhåbentlig en dag Formula 1. Det kræver talent, hårdt arbejde og 
+        støtte fra fantastiske sponsorer og fans.
+      </p>
+    </div>
+  </section>
+</Layout>

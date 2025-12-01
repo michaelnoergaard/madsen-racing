@@ -1,0 +1,92 @@
+---
+import Layout from '../layouts/Layout.astro';
+import StatCard from '../components/StatCard.astro';
+import RaceCard from '../components/RaceCard.astro';
+
+// TODO: Replace with Contentful data
+const stats2025 = [
+  { value: '24', label: 'Løb' },
+  { value: '6', label: 'Sejre' },
+  { value: '12', label: 'Podier' },
+  { value: '8', label: 'Hurtigste omgange' },
+];
+
+const results2025 = [
+  { date: '15 Okt', name: 'DKM Finale', track: 'Roskilde Racing', result: 1 },
+  { date: '28 Sep', name: 'Nordic Championship', track: 'Asum Ring', result: 2 },
+  { date: '14 Sep', name: 'DKM Runde 6', track: 'Vojens Speedway', result: 1 },
+  { date: '24 Aug', name: 'DKM Runde 5', track: 'Nysum Karting', result: 3 },
+  { date: '10 Aug', name: 'Rotax Nordic Final', track: 'Kristianstad', result: 4 },
+  { date: '27 Jul', name: 'DKM Runde 4', track: 'Roskilde Racing', result: 1 },
+];
+
+const highlights = [
+  { title: 'DKM Mester 2025', description: 'Vandt det Danske Kart Mesterskab i OK Junior klassen' },
+  { title: '6 sejre i træk', description: 'Sæsonrekord med 6 consecutive race wins' },
+  { title: 'Nordic Championship P2', description: 'Sølvmedalje ved Nordic Championship' },
+];
+---
+
+<Layout 
+  title="Resultater" 
+  description="Se Anton Madsens karriereresultater, statistik og højdepunkter fra karting-sæsonen."
+>
+  <!-- Hero -->
+  <section class="pt-32 pb-16 bg-mr-gradient-dark">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-black mb-4 font-display">
+        RESULTATER & <span class="text-mr-yellow">STATISTIK</span>
+      </h1>
+      <p class="text-mr-gray-400 max-w-2xl mx-auto">
+        Følg med i Anton's karriereudvikling og resultater fra sæson til sæson.
+      </p>
+    </div>
+  </section>
+
+  <!-- Stats 2025 -->
+  <section class="section bg-mr-black">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="section-title text-center mb-12">SÆSON <span class="text-mr-yellow">2025</span></h2>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+        {stats2025.map(stat => (
+          <StatCard value={stat.value} label={stat.label} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlights -->
+  <section class="section bg-mr-gray-900/50">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-2xl font-black mb-8 text-center">HØJDEPUNKTER</h2>
+      
+      <div class="grid md:grid-cols-3 gap-6">
+        {highlights.map((item, i) => (
+          <div class="card-highlight text-center">
+            <div class="text-4xl mb-3">🏆</div>
+            <h3 class="font-bold text-mr-yellow mb-2">{item.title}</h3>
+            <p class="text-mr-gray-400 text-sm">{item.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Results List -->
+  <section class="section bg-mr-black">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-2xl font-black mb-8">ALLE RESULTATER 2025</h2>
+      
+      <div class="space-y-4">
+        {results2025.map(race => (
+          <RaceCard {...race} />
+        ))}
+      </div>
+      
+      <p class="text-center text-mr-gray-500 mt-8">
+        Viser seneste 6 løb. Fuld historik kommer snart.
+      </p>
+    </div>
+  </section>
+</Layout>
