@@ -20,5 +20,17 @@ export default defineConfig({
       port: 4321,
       allowedHosts: ['madsenracing.micnor.dk', 'madsenracing.dk']
     }
+  },
+  // Enable built-in image optimization
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp',
+      config: {
+        // Default quality for optimized images
+        quality: 85,
+        // Generate multiple formats for better browser support
+        formats: ['avif', 'webp', 'jpg'],
+      }
+    }
   }
 });

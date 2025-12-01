@@ -1,8 +1,38 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getMediaItems, getVideos, getFeaturedMediaItems, getFeaturedVideos, getPressPhotos } from '../lib/contentful';
+import MediaGrid from '../components/media/MediaGrid.astro';
+import YouTubePlayer from '../components/media/YouTubePlayer.astro';
+import OptimizedImage from '../components/media/OptimizedImage.astro';
 
-// Placeholder data - will be replaced with Contentful/Instagram data
-const categories = ['ALLE', 'ACTION', 'BEHIND THE SCENES', 'VIDEO'];
+// Media categories
+const categories = ['ALLE', 'RACING ACTION', 'BEHIND SCENES', 'PROFESSIONEL', 'VIDEO'];
+
+// Fetch data from Contentful
+let mediaItems = [];
+let videos = [];
+let featuredMedia = [];
+let featuredVideos = [];
+let pressPhotos = [];
+
+try {
+  // Fetch data in parallel for better performance
+  const [mediaData, videosData, featuredMediaData, featuredVideosData, pressPhotosData] = await Promise.all([
+    getMediaItems(),
+    getVideos(),
+    getFeaturedMediaItems(6),
+    getFeaturedVideos(4),
+    getPressPhotos(),
+  ]);
+
+  mediaItems = mediaData;
+  videos = videosData;
+  featuredMedia = featuredMediaData;
+  featuredVideos = featuredVideosData;
+  pressPhotos = pressPhotosData;
+} catch (error) {
+  console.warn('Failed to fetch media from Contentful:', error);
+}
 ---
 
 <Layout 
@@ -24,13 +54,14 @@ const categories = ['ALLE', 'ACTION', 'BEHIND THE SCENES', 'VIDEO'];
   <!-- Filter -->
   <section class="py-8 bg-mr-black border-b border-mr-gray-800">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="flex flex-wrap justify-center gap-2">
+      <div class="flex flex-wrap justify-center gap-2" id="category-filters">
         {categories.map((cat, i) => (
-          <button 
+          <button
             class:list={[
-              'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+              'category-filter px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
               i === 0 ? 'bg-mr-yellow text-mr-black' : 'bg-mr-gray-800 text-mr-gray-400 hover:bg-mr-gray-700'
             ]}
+            data-category={cat.toLowerCase()}
           >
             {cat}
           </button>
@@ -39,68 +70,125 @@ const categories = ['ALLE', 'ACTION', 'BEHIND THE SCENES', 'VIDEO'];
     </div>
   </section>
 
-  <!-- Instagram Grid -->
+  <!-- Featured Media -->
+  {featuredMedia.length > 0 && (
+    <section class="section bg-mr-black">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-black mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-mr-yellow" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3.00388 11.88C2.99995 11.88 2.99995 11.88 5.09992 11.88C6.6999 11.88 8.09994 13.08 9.09992 14.28C9.39992 14.68 9.69991 15.08 9.99992 15.48C9.09994 16.08 8.09994 16.68 7.09992 17.28C6.49992 17.88 5.59991 18.48 4.69995 18.88C4.09991 19.28 3.59992 19.68 3.09992 19.88C3.09992 19.68 3.09992 19.68 2.99995 19.88"/>
+          </svg>
+          Udvalgte Billeder
+        </h2>
+
+        <MediaGrid
+          items={featuredMedia}
+          category="all"
+          columns="3"
+          gap="medium"
+        />
+      </div>
+    </section>
+  )}
+
+  <!-- Main Gallery -->
   <section class="section bg-mr-black">
     <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-        <svg class="w-5 h-5 text-mr-yellow" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/>
-        </svg>
-        Seneste fra Instagram
-      </h2>
-      
-      <!-- Placeholder grid -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div class="aspect-square rounded-xl overflow-hidden bg-gradient-to-br from-mr-yellow/20 to-mr-purple/20 border border-mr-gray-700 flex items-center justify-center group cursor-pointer hover:border-mr-yellow/50 transition-all">
-            <div class="text-center text-mr-gray-500 group-hover:text-mr-gray-300 transition-colors">
-              <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/>
-              </svg>
-              <p class="text-xs">Post {i + 1}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      <p class="text-center text-mr-gray-500 text-sm mt-8">
-        💡 Integrer Elfsight eller Instagram API for live feed
-      </p>
+      <h2 class="text-2xl font-black mb-6">Billedgalleri</h2>
+
+      {mediaItems.length > 0 ? (
+        <MediaGrid
+          items={mediaItems}
+          category="all"
+          layout="grid"
+          columns="auto"
+          gap="medium"
+          className="main-gallery"
+        />
+      ) : (
+        <div class="text-center py-12">
+          <p class="text-mr-gray-500">
+            Ingen billeder fundet. Tjek Contentful indstillinger for at uploade medier.
+          </p>
+        </div>
+      )}
     </div>
   </section>
 
-  <!-- Press Photos -->
-  <section class="section bg-mr-gray-900/50">
-    <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-2xl font-black mb-2">PRESSEFOTOS</h2>
-      <p class="text-mr-gray-400 mb-8">Højopløselige billeder til presse og medier</p>
-      
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="card text-center">
-          <div class="aspect-video bg-mr-gray-800 rounded-lg mb-4 flex items-center justify-center">
-            <span class="text-mr-gray-500">Portræt</span>
-          </div>
-          <button class="btn-outline w-full text-sm">
-            Download (5MB)
-          </button>
+  <!-- Videos Section -->
+  {featuredVideos.length > 0 && (
+    <section class="section bg-mr-gray-900/50">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-black mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-mr-yellow" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Video Highlights
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+          {featuredVideos.map((video, index) => (
+            <div key={video.sys.id} class="bg-mr-black rounded-lg overflow-hidden shadow-lg">
+              {video.fields.youtubeVideoId ? (
+                <YouTubePlayer
+                  videoId={video.fields.youtubeVideoId}
+                  videoUrl={video.fields.youtubeUrl}
+                  title={video.fields.title}
+                  thumbnail={video.fields.thumbnail?.fields?.file?.url}
+                  className="w-full aspect-video"
+                  width={640}
+                  height={360}
+                />
+              ) : (
+                <div class="aspect-video bg-gray-800 flex items-center justify-center text-gray-500">
+                  <p>Video ikke tilgængelig</p>
+                </div>
+              )}
+
+              <div class="p-4">
+                <h3 class="font-bold text-white mb-2">{video.fields.title}</h3>
+                {video.fields.description && (
+                  <p class="text-mr-gray-400 text-sm mb-2">{video.fields.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-        <div class="card text-center">
-          <div class="aspect-video bg-mr-gray-800 rounded-lg mb-4 flex items-center justify-center">
-            <span class="text-mr-gray-500">Action Shot</span>
+
+        {videos.length > 3 && (
+          <div class="text-center">
+            <a href="#all-videos" class="btn-primary">
+              Se Alle Videoer ({videos.length})
+            </a>
           </div>
-          <button class="btn-outline w-full text-sm">
-            Download (8MB)
-          </button>
-        </div>
-        <div class="card text-center">
-          <div class="aspect-video bg-mr-gray-800 rounded-lg mb-4 flex items-center justify-center">
-            <span class="text-mr-gray-500">Kart</span>
-          </div>
-          <button class="btn-outline w-full text-sm">
-            Download (6MB)
-          </button>
-        </div>
+        )}
       </div>
-    </div>
-  </section>
+    </section>
+  )}
+
+  <script>
+  // Gallery filtering functionality
+  document.addEventListener('astro:page-load', () => {
+    const filters = document.querySelectorAll('.category-filter');
+    const gallery = document.querySelector('.main-gallery');
+
+    filters.forEach(filter => {
+      filter.addEventListener('click', (e) => {
+        const category = e.target.dataset.category;
+
+        // Update active state
+        filters.forEach(f => {
+          f.classList.remove('bg-mr-yellow', 'text-mr-black');
+          f.classList.add('bg-mr-gray-800', 'text-mr-gray-400');
+        });
+        e.target.classList.remove('bg-mr-gray-800', 'text-mr-gray-400');
+        e.target.classList.add('bg-mr-yellow', 'text-mr-black');
+
+        // Filter gallery items (this would need the media items to be client-side or using Alpine.js)
+        console.log(`Filtering by category: ${category}`);
+      });
+    });
+  });
+</script>
+</Layout>
 </Layout>

@@ -1,12 +1,16 @@
 ---
+import OptimizedImage from './media/OptimizedImage.astro';
+
 interface Props {
   name: string;
   tier: 'guld' | 'sølv' | 'bronze' | string;
   logo?: string;
   website?: string;
+  width?: number;
+  height?: number;
 }
 
-const { name, tier, logo, website } = Astro.props;
+const { name, tier, logo, website, width = 200, height = 100 } = Astro.props;
 
 const tierClass = {
   guld: 'sponsor-logo-guld',
@@ -16,7 +20,7 @@ const tierClass = {
 ---
 
 {website ? (
-  <a 
+  <a
     href={website}
     target="_blank"
     rel="noopener noreferrer"
@@ -24,7 +28,16 @@ const tierClass = {
     title={name}
   >
     {logo ? (
-      <img src={logo} alt={name} class="max-w-full max-h-full object-contain p-2" />
+      <OptimizedImage
+        src={logo}
+        alt={`${name} logo`}
+        width={width}
+        height={height}
+        quality={90}
+        format="webp"
+        class="max-w-full max-h-full object-contain p-2"
+        fit="contain"
+      />
     ) : (
       <span class="text-mr-gray-500 text-xs text-center px-2">{name}</span>
     )}
@@ -32,7 +45,16 @@ const tierClass = {
 ) : (
   <div class:list={['sponsor-logo', tierClass]} title={name}>
     {logo ? (
-      <img src={logo} alt={name} class="max-w-full max-h-full object-contain p-2" />
+      <OptimizedImage
+        src={logo}
+        alt={`${name} logo`}
+        width={width}
+        height={height}
+        quality={90}
+        format="webp"
+        class="max-w-full max-h-full object-contain p-2"
+        fit="contain"
+      />
     ) : (
       <span class="text-mr-gray-500 text-xs text-center px-2">{name}</span>
     )}

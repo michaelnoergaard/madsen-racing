@@ -73,11 +73,65 @@ export interface DriverStatsFields {
   points?: EntryFieldTypes.Integer;
 }
 
+// Media content types for photo and video gallery
+export interface MediaGalleryFields {
+  title: EntryFieldTypes.Text;
+  description?: EntryFieldTypes.RichText;
+  featuredImage?: EntryFieldTypes.AssetLink;
+  season?: EntryFieldTypes.Text;
+  isActive: EntryFieldTypes.Boolean;
+}
+
+export interface MediaItemFields {
+  title: EntryFieldTypes.Text;
+  description?: EntryFieldTypes.Text;
+  file: EntryFieldTypes.AssetLink;
+  type: EntryFieldTypes.Symbol; // 'image' | 'video'
+  category: EntryFieldTypes.Symbol; // 'racing-action' | 'behind-scenes' | 'professional' | 'interviews'
+  tags: EntryFieldTypes.Array<EntryFieldTypes.Symbol>;
+  date: EntryFieldTypes.Date;
+  featured: EntryFieldTypes.Boolean;
+  season?: EntryFieldTypes.Symbol;
+  photographer?: EntryFieldTypes.Text;
+  location?: EntryFieldTypes.Text;
+}
+
+export interface VideoFields {
+  title: EntryFieldTypes.Text;
+  description?: EntryFieldTypes.RichText;
+  thumbnail: EntryFieldTypes.AssetLink;
+  youtubeUrl: EntryFieldTypes.Text;
+  youtubeVideoId: EntryFieldTypes.Text;
+  duration?: EntryFieldTypes.Integer;
+  category: EntryFieldTypes.Symbol; // 'race-highlights' | 'interviews' | 'technical' | 'team-content'
+  uploadDate: EntryFieldTypes.Date;
+  season?: EntryFieldTypes.Symbol;
+  tags?: EntryFieldTypes.Array<EntryFieldTypes.Symbol>;
+  featured: EntryFieldTypes.Boolean;
+}
+
+export interface PressPhotoFields {
+  title: EntryFieldTypes.Text;
+  description?: EntryFieldTypes.Text;
+  photo: EntryFieldTypes.AssetLink;
+  credit: EntryFieldTypes.Text;
+  downloadUrl?: EntryFieldTypes.Text;
+  category: EntryFieldTypes.Symbol;
+  date: EntryFieldTypes.Date;
+  resolution?: EntryFieldTypes.Text;
+  fileFormat: EntryFieldTypes.Symbol;
+  fileSize: EntryFieldTypes.Integer;
+}
+
 // Type aliases for entries
 export type RaceEntry = Entry<RaceFields, undefined, string>;
 export type SponsorEntry = Entry<SponsorFields, undefined, string>;
 export type PageContentEntry = Entry<PageContentFields, undefined, string>;
 export type DriverStatsEntry = Entry<DriverStatsFields, undefined, string>;
+export type MediaGalleryEntry = Entry<MediaGalleryFields, undefined, string>;
+export type MediaItemEntry = Entry<MediaItemFields, undefined, string>;
+export type VideoEntry = Entry<VideoFields, undefined, string>;
+export type PressPhotoEntry = Entry<PressPhotoFields, undefined, string>;
 
 // ============================================
 // Data Fetching Functions
@@ -325,17 +379,244 @@ export function daysUntil(dateString: string): number {
  */
 export function getImageUrl(asset: unknown, width?: number, quality = 80): string {
   if (!asset || typeof asset !== 'object') return '';
-  
+
   const assetObj = asset as { fields?: { file?: { url?: string } } };
   const url = assetObj.fields?.file?.url;
-  
+
   if (!url) return '';
-  
+
   let imageUrl = url.startsWith('//') ? `https:${url}` : url;
-  
+
   if (width) {
     imageUrl += `?w=${width}&q=${quality}&fm=webp`;
   }
-  
+
   return imageUrl;
+}
+
+// ============================================
+// Media Gallery Functions
+// ============================================
+
+/**
+ * Get all media items for gallery
+ */
+export async function getMediaItems(category?: string, season?: string, preview = false): Promise<MediaItemEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty media items array');
+    return [];
+  }
+
+  try {
+    const query: Record<string, unknown> = {
+      content_type: 'mediaItem',
+      order: ['-fields.date'],
+    };
+
+    if (category) {
+      query['fields.category'] = category;
+    }
+
+    if (season) {
+      query['fields.season'] = season;
+    }
+
+    const entries = await client.getEntries(query) as { items: MediaItemEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch media items from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Get featured media items
+ */
+export async function getFeaturedMediaItems(limit = 6, preview = false): Promise<MediaItemEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty featured media items array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'mediaItem',
+      'fields.featured': true,
+      order: ['-fields.date'],
+      limit,
+    }) as { items: MediaItemEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch featured media items from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Get videos by category
+ */
+export async function getVideos(category?: string, season?: string, preview = false): Promise<VideoEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty videos array');
+    return [];
+  }
+
+  try {
+    const query: Record<string, unknown> = {
+      content_type: 'video',
+      order: ['-fields.uploadDate'],
+    };
+
+    if (category) {
+      query['fields.category'] = category;
+    }
+
+    if (season) {
+      query['fields.season'] = season;
+    }
+
+    const entries = await client.getEntries(query) as { items: VideoEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch videos from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Get featured videos
+ */
+export async function getFeaturedVideos(limit = 4, preview = false): Promise<VideoEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty featured videos array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'video',
+      'fields.featured': true,
+      order: ['-fields.uploadDate'],
+      limit,
+    }) as { items: VideoEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch featured videos from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Get press photos for download
+ */
+export async function getPressPhotos(category?: string, preview = false): Promise<PressPhotoEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty press photos array');
+    return [];
+  }
+
+  try {
+    const query: Record<string, unknown> = {
+      content_type: 'pressPhoto',
+      order: ['-fields.date'],
+    };
+
+    if (category) {
+      query['fields.category'] = category;
+    }
+
+    const entries = await client.getEntries(query) as { items: PressPhotoEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch press photos from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Extract YouTube video ID from URL
+ */
+export function extractYouTubeVideoId(url: string): string | null {
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[7].length === 11) ? match[7] : null;
+}
+
+/**
+ * Format YouTube video thumbnail URL
+ */
+export function getYouTubeThumbnailUrl(videoId: string, quality: 'default' | 'medium' | 'high' | 'maxres' = 'high'): string {
+  const qualityMap = {
+    default: 'default',
+    medium: 'mqdefault',
+    high: 'hqdefault',
+    maxres: 'maxresdefault'
+  };
+
+  return `https://img.youtube.com/vi/${videoId}/${qualityMap[quality]}.jpg`;
+}
+
+/**
+ * Get media items by tags
+ */
+export async function getMediaItemsByTags(tags: string[], preview = false): Promise<MediaItemEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty media items by tags array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'mediaItem',
+      'fields.tags[in]': tags,
+      order: ['-fields.date'],
+    }) as { items: MediaItemEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch media items by tags from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Search media items by title or description
+ */
+export async function searchMediaItems(query: string, preview = false): Promise<MediaItemEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty search results array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'mediaItem',
+      query: query,
+      order: ['-fields.date'],
+    }) as { items: MediaItemEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to search media items from Contentful:', error);
+    return [];
+  }
 }

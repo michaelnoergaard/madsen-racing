@@ -34,7 +34,17 @@
       "Bash(wget:*)",
       "Bash(tar:*)",
       "Bash(export:*)",
-      "Bash(gh auth status:*)"
+      "Bash(gh auth status:*)",
+      "Bash(https://api.github.com/repos/michaelnoergaard/madsen-racing/actions/workflows/211910388/dispatches )",
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker login:*)",
+      "Bash(docker push:*)",
+      "Bash(npm view:*)",
+      "Bash(npx astro check:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

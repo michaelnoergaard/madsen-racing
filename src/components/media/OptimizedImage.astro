@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import { getImage } from 'astro:assets';
+
+export interface Props {
+  src: string | import('astro:assets').Asset;
+  alt: string;
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'avif' | 'webp' | 'jpg' | 'png' | 'auto';
+  loading?: 'lazy' | 'eager';
+  sizes?: string;
+  class?: string;
+  priority?: boolean;
+  fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+  style?: string;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  quality = 85,
+  format = 'auto',
+  loading = 'lazy',
+  sizes,
+  class: className = '',
+  priority = false,
+  fit = 'cover',
+  style = '',
+} = Astro.props;
+
+// Ensure alt text is provided for accessibility
+if (!alt) {
+  throw new Error('OptimizedImage component requires alt text for accessibility');
+}
+
+// Handle different src types
+let optimizedSrc = src;
+let optimizedWidth = width;
+let optimizedHeight = height;
+
+// If src is a string (URL), we'll use it directly with fallback
+if (typeof src === 'string') {
+  // For external URLs or non-optimized images
+  optimizedSrc = src;
+} else {
+  // For local assets, Astro's Image component will handle optimization
+  optimizedSrc = src;
+}
+
+// Determine loading strategy
+const loadingStrategy = priority ? 'eager' : loading;
+---
+
+{typeof optimizedSrc === 'string' ? (
+  <!-- Fallback for external URLs (e.g., Contentful assets) -->
+  <img
+    src={optimizedSrc}
+    alt={alt}
+    width={optimizedWidth}
+    height={optimizedHeight}
+    loading={loadingStrategy}
+    class={`transition-opacity duration-300 ${className}`}
+    style={style}
+    decoding="async"
+    onerror="this.style.opacity='0.7'; this.style.filter='grayscale(1)';"
+    onload="this.style.opacity='1';"
+  />
+) : (
+  <!-- Optimized local assets -->
+  <Image
+    src={optimizedSrc}
+    alt={alt}
+    width={optimizedWidth}
+    height={optimizedHeight}
+    quality={quality}
+    format={format}
+    loading={loadingStrategy}
+    sizes={sizes}
+    class={`transition-opacity duration-300 ${className}`}
+    style={style}
+    fit={fit}
+    decoding="async"
+    onLoad="this.style.opacity='1';"
+    onError="this.style.opacity='0.7'; this.style.filter='grayscale(1)';"
+  />
+)}

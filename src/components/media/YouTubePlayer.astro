@@ -1,0 +1,158 @@
+---
+import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from '../../lib/contentful';
+import OptimizedImage from './OptimizedImage.astro';
+
+export interface Props {
+  videoId?: string;
+  videoUrl?: string;
+  title?: string;
+  thumbnail?: string;
+  width?: number;
+  height?: number;
+  autoplay?: boolean;
+  muted?: boolean;
+  controls?: boolean;
+  rel?: boolean;
+  modestBranding?: boolean;
+  className?: string;
+  loading?: 'lazy' | 'eager';
+}
+
+const {
+  videoId: propVideoId,
+  videoUrl,
+  title = '',
+  thumbnail,
+  width = 640,
+  height = 360,
+  autoplay = false,
+  muted = false,
+  controls = true,
+  rel = false, // Don't show related videos from other channels
+  modestBranding = true,
+  className = '',
+  loading = 'lazy',
+} = Astro.props;
+
+// Extract video ID from URL if provided
+const finalVideoId = propVideoId || (videoUrl ? extractYouTubeVideoId(videoUrl) : null);
+
+if (!finalVideoId) {
+  throw new Error('YouTubePlayer: Either videoId or videoUrl must be provided');
+}
+
+const embedUrl = `https://www.youtube.com/embed/${finalVideoId}`;
+const thumbnailUrl = thumbnail || getYouTubeThumbnailUrl(finalVideoId, 'high');
+
+// Build query parameters
+const params = new URLSearchParams({
+  autoplay: autoplay ? '1' : '0',
+  mute: muted ? '1' : '0',
+  controls: controls ? '1' : '0',
+  rel: rel ? '1' : '0',
+  modestbranding: modestBranding ? '1' : '0',
+  fs: '1', // Fullscreen button
+  cc_load_policy: '1', // Closed captions
+  cc_lang_pref: 'da', // Danish captions preference
+  hl: 'da', // Interface language
+});
+
+const finalEmbedUrl = `${embedUrl}?${params.toString()}`;
+---
+
+<div class={`youtube-container relative w-full ${className}`} style={`aspect-ratio: ${width}/${height};`}>
+  <!-- Thumbnail with play button -->
+  <div class="youtube-thumbnail group cursor-pointer" onclick="this.parentElement.classList.add('playing')">
+    <OptimizedImage
+      src={thumbnailUrl}
+      alt={title || `Video thumbnail`}
+      width={width}
+      height={height}
+      quality={80}
+      format="webp"
+      class="absolute inset-0 w-full h-full object-cover"
+      fit="cover"
+      loading={loading}
+    />
+
+    <!-- Play button overlay -->
+    <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-all duration-300">
+      <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+        <svg class="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Video title overlay -->
+    {title && (
+      <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
+        <h3 class="text-white font-medium text-sm">{title}</h3>
+      </div>
+    )}
+  </div>
+
+  <!-- YouTube iframe (loaded when thumbnail is clicked) -->
+  <iframe
+    class="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-500 pointer-events-none"
+    src={finalEmbedUrl}
+    title={title || `YouTube video player`}
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+    loading={loading}
+    onloadstart="this.parentElement.classList.add('loading')"
+    oncanplay="this.classList.remove('loading'); this.classList.add('loaded'); this.style.opacity='1'; this.style.pointerEvents='auto'"
+  />
+
+  <!-- Loading indicator -->
+  <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 pointer-events-none">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+  </div>
+
+  <!-- Madsen Racing branding (optional small watermark) -->
+  <div class="absolute top-2 left-2 text-white text-xs font-bold opacity-75 pointer-events-none">
+    MR
+  </div>
+</div>
+
+<style>
+  .youtube-container.playing .youtube-thumbnail {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .youtube-container.playing iframe {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .youtube-container.loading .absolute.inset-0.flex.items-center.justify-center.bg-black.bg-opacity-50 {
+    opacity: 1;
+  }
+
+  .youtube-container.loaded iframe {
+    border-radius: 8px;
+  }
+</style>
+
+<script>
+  // Handle iframe loading states
+  document.addEventListener('astro:page-load', () => {
+    const containers = document.querySelectorAll('.youtube-container');
+
+    containers.forEach(container => {
+      const thumbnail = container.querySelector('.youtube-thumbnail');
+      const iframe = container.querySelector('iframe');
+
+      if (thumbnail && iframe) {
+        thumbnail.addEventListener('click', () => {
+          // Start loading the iframe
+          iframe.style.pointerEvents = 'auto';
+          const src = iframe.getAttribute('src');
+          iframe.setAttribute('src', src + '&autoplay=1');
+        });
+      }
+    });
+  });
+</script>

@@ -1,0 +1,212 @@
+---
+import OptimizedImage from './OptimizedImage.astro';
+import { getImageUrl } from '../../lib/contentful';
+
+export interface Props {
+  isOpen?: boolean;
+  images?: Array<{
+    url?: string;
+    title?: string;
+    description?: string;
+  }>;
+  currentIndex?: number;
+  onClose?: () => void;
+}
+
+const {
+  isOpen = false,
+  images = [],
+  currentIndex = 0,
+  onClose = () => {},
+} = Astro.props;
+---
+
+{isOpen ? (
+  <div class="lightbox fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm" onclick={onClose}>
+    <!-- Close button -->
+    <button
+      class="absolute top-4 right-4 text-white bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 transition-all duration-300"
+      onclick={onClose}
+      aria-label="Close lightbox"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <!-- Previous/Next navigation -->
+    {images.length > 1 && (
+      <>
+        <button
+          class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          onclick={(e) => {
+            e.stopPropagation();
+            // Previous image navigation
+          }}
+          disabled={currentIndex === 0}
+          aria-label="Previous image"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+
+        <button
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          onclick={(e) => {
+            e.stopPropagation();
+            // Next image navigation
+          }}
+          disabled={currentIndex === images.length - 1}
+          aria-label="Next image"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </>
+    )}
+
+    <!-- Image container -->
+    <div class="max-w-7xl max-h-full p-4" onclick={(e) => e.stopPropagation()}>
+      {images[currentIndex] && (
+        <div class="flex flex-col items-center">
+          <!-- Main image -->
+          <div class="relative mb-4">
+            <OptimizedImage
+              src={images[currentIndex].url || ''}
+              alt={images[currentIndex].title || 'Gallery image'}
+              width={1200}
+              height={800}
+              quality={90}
+              format="webp"
+              class="max-w-full max-h-[60vh] object-contain rounded-lg shadow-2xl"
+              fit="contain"
+            />
+
+            <!-- Download button -->
+            <button
+              class="absolute bottom-4 right-4 bg-mr-yellow text-mr-black px-3 py-2 rounded-lg hover:bg-mr-yellow/80 transition-all duration-300 flex items-center gap-2"
+              onClick={() => {
+                const link = document.createElement('a');
+                link.href = images[currentIndex].url || '';
+                link.download = images[currentIndex].title || 'image';
+                link.click();
+              }}
+              aria-label="Download image"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l4 4m0 0l-4-4m4 4H4"/>
+              </svg>
+              Download
+            </button>
+          </div>
+
+          <!-- Image information -->
+          <div class="text-center text-white max-w-2xl">
+            {images[currentIndex].title && (
+              <h2 class="text-xl font-bold mb-2">{images[currentIndex].title}</h2>
+            )}
+            {images[currentIndex].description && (
+              <p class="text-gray-300 mb-4">{images[currentIndex].description}</p>
+            )}
+
+            <!-- Image counter -->
+            {images.length > 1 && (
+              <div class="text-sm text-gray-400">
+                {currentIndex + 1} of {images.length}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- Thumbnails strip -->
+    {images.length > 1 && (
+      <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black bg-opacity-50 p-2 rounded-lg">
+        {images.map((image, index) => (
+          <button
+            key={index}
+            class={`w-16 h-16 rounded overflow-hidden border-2 transition-all duration-300 ${
+              index === currentIndex
+                ? 'border-mr-yellow scale-110'
+                : 'border-transparent hover:border-gray-500'
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              // Navigate to specific image
+            }}
+            aria-label={`Go to image ${index + 1}`}
+          >
+            <OptimizedImage
+              src={image.url || ''}
+              alt={image.title || `Thumbnail ${index + 1}`}
+              width={64}
+              height={64}
+              quality={60}
+              format="webp"
+              class="w-full h-full object-cover"
+              fit="cover"
+            />
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+) : null}
+
+<style>
+  /* Lightbox animations */
+  .lightbox {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Prevent scroll on body when lightbox is open */
+  body:has(.lightbox) {
+    overflow: hidden;
+  }
+
+  /* Keyboard navigation hint */
+  .lightbox::after {
+    content: "Use ← → arrows to navigate, ESC to close";
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.875rem;
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  // Handle keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    const lightbox = document.querySelector('.lightbox');
+    if (!lightbox || lightbox.style.display === 'none') return;
+
+    switch (e.key) {
+      case 'Escape':
+        lightbox.click();
+        break;
+      case 'ArrowLeft':
+        const prevButton = document.querySelector('.lightbox button[aria-label="Previous image"]');
+        if (prevButton && !prevButton.disabled) prevButton.click();
+        break;
+      case 'ArrowRight':
+        const nextButton = document.querySelector('.lightbox button[aria-label="Next image"]');
+        if (nextButton && !nextButton.disabled) nextButton.click();
+        break;
+    }
+  });
+</script>

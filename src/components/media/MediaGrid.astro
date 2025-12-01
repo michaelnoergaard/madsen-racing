@@ -1,0 +1,189 @@
+---
+import MediaItem from './MediaItem.astro';
+
+export interface Props {
+  items: any[];
+  category?: string;
+  layout?: 'grid' | 'masonry';
+  columns?: '2' | '3' | '4' | 'auto';
+  gap?: 'small' | 'medium' | 'large';
+  className?: string;
+  loading?: 'lazy' | 'eager';
+}
+
+const {
+  items = [],
+  category = 'all',
+  layout = 'grid',
+  columns = '3',
+  gap = 'medium',
+  className = '',
+  loading = 'lazy',
+} = Astro.props;
+
+const columnClasses = {
+  '2': 'md:grid-cols-2',
+  '3': 'md:grid-cols-2 lg:grid-cols-3',
+  '4': 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+  'auto': 'grid-cols-[repeat(auto-fit,minmax(250px,1fr))]',
+};
+
+const gapClasses = {
+  small: 'gap-2 md:gap-3',
+  medium: 'gap-4 md:gap-6',
+  large: 'gap-6 md:gap-8',
+};
+
+const layoutClasses = {
+  grid: 'grid grid-cols-1',
+  masonry: 'columns-1 md:columns-2 lg:columns-3 xl:columns-4',
+};
+
+// Filter items by category if specified
+const filteredItems = category === 'all'
+  ? items
+  : items.filter(item => item.fields.category === category);
+
+// Determine grid auto-rows for different item types
+const gridAutoRows = layout === 'grid' ? 'grid-rows-[auto]' : '';
+
+// Size classes for different item types
+const getItemSizeClass = (index: number, type: string) => {
+  // Create a more dynamic layout pattern
+  if (type === 'video') {
+    return index % 4 === 0 ? 'large' : 'medium';
+  }
+
+  // Vary sizes for images to create interesting layout
+  const sizePattern = ['small', 'medium', 'medium', 'large'];
+  return sizePattern[index % sizePattern.length];
+};
+---
+
+<div class={`media-gallery ${layoutClasses[layout]} ${columnClasses[columns]} ${gapClasses[gap]} ${gridAutoRows} ${className}`}>
+  {filteredItems.length === 0 ? (
+    <!-- Empty state -->
+    <div class="col-span-full text-center py-12">
+      <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-600 mb-2">No media found</h3>
+      <p class="text-gray-500">
+        {category === 'all'
+          ? 'No media items available yet.'
+          : `No media found in the "${category}" category.`
+        }
+      </p>
+    </div>
+  ) : (
+    filteredItems.map((item, index) => (
+      <MediaItem
+        key={item.sys.id}
+        item={item}
+        size={getItemSizeClass(index, item.fields.type)}
+        showTitle={true}
+        showDate={true}
+        showMeta={true}
+        loading={loading}
+        className="transform transition-all duration-300 hover:scale-105"
+      />
+    ))
+  )}
+
+  <!-- Loading skeleton for more items -->
+  {filteredItems.length > 0 && loading === 'lazy' && (
+    <>
+      <div class="skeleton-item col-span-1 row-span-2 aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+      <div class="skeleton-item col-span-1 row-span-1 aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+      <div class="skeleton-item col-span-1 row-span-1 aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
+    </>
+  )}
+</div>
+
+<style>
+  /* Masonry layout specific styles */
+  .columns-1 {
+    column-count: 1;
+  }
+
+  .columns-2 {
+    column-count: 2;
+    column-gap: 1rem;
+  }
+
+  .columns-3 {
+    column-count: 3;
+    column-gap: 1rem;
+  }
+
+  .columns-4 {
+    column-count: 4;
+    column-gap: 1rem;
+  }
+
+  /* For masonry layout, prevent breaking of items */
+  .columns-1 .media-item,
+  .columns-2 .media-item,
+  .columns-3 .media-item,
+  .columns-4 .media-item {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* Skeleton animations */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .columns-2,
+    .columns-3,
+    .columns-4 {
+      column-count: 1;
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 768px) {
+    .columns-3,
+    .columns-4 {
+      column-count: 2;
+    }
+  }
+
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .columns-4 {
+      column-count: 3;
+    }
+  }
+
+  /* Grid gap spacing */
+  .gap-2 {
+    gap: 0.5rem;
+  }
+
+  .gap-3 {
+    gap: 0.75rem;
+  }
+
+  .gap-4 {
+    gap: 1rem;
+  }
+
+  .gap-6 {
+    gap: 1.5rem;
+  }
+
+  .gap-8 {
+    gap: 2rem;
+  }
+</style>
