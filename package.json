@@ -11,7 +11,12 @@
     "astro": "astro",
     "setup:contentful": "node scripts/setup-contentful.js",
     "docker:build": "docker build -t madsen-racing .",
-    "docker:run": "docker run -p 4321:4321 madsen-racing"
+    "docker:run": "docker run -p 4321:4321 madsen-racing",
+    "docker:local": "docker-compose up --build",
+    "docker:local-detached": "docker-compose up --build -d",
+    "docker:local-stop": "docker-compose down",
+    "docker:local-logs": "docker-compose logs -f",
+    "docker:local-rebuild": "docker-compose up --build --force-recreate"
   },
   "dependencies": {
     "@astrojs/check": "",

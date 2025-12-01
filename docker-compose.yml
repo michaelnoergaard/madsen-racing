@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  madsen-racing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4321:4321"
+    env_file:
+      - .env
+    restart: unless-stopped
+    container_name: madsen-racing-local
+    labels:
+      - "com.madsen-racing.description=Madsen Racing website"
+      - "com.madsen-racing.environment=local-development"
+
+  # Optional: Add Nginx for production-like reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx-local.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - madsen-racing
+    restart: unless-stopped
+    container_name: madsen-racing-nginx
+    profiles:
+      - with-nginx
