@@ -1,19 +1,23 @@
 import contentful, { type EntryFieldTypes, type Entry } from 'contentful';
 
-// Initialize Contentful client
-const client = contentful.createClient({
-  space: import.meta.env.CONTENTFUL_SPACE_ID,
-  accessToken: import.meta.env.CONTENTFUL_ACCESS_TOKEN,
-  defaultLocale: 'da-DK',
-});
+// Check if Contentful environment variables are available
+const hasContentfulConfig =
+  import.meta.env.CONTENTFUL_SPACE_ID &&
+  import.meta.env.CONTENTFUL_ACCESS_TOKEN;
+
+// Initialize Contentful client only if config is available
+const client = hasContentfulConfig ? contentful.createClient({
+  space: import.meta.env.CONTENTFUL_SPACE_ID!,
+  accessToken: import.meta.env.CONTENTFUL_ACCESS_TOKEN!,
+}) : null;
 
 // Preview client for draft content
-const previewClient = contentful.createClient({
-  space: import.meta.env.CONTENTFUL_SPACE_ID,
-  accessToken: import.meta.env.CONTENTFUL_PREVIEW_TOKEN || '',
-  host: 'preview.contentful.com',
-  defaultLocale: 'da-DK',
-});
+const previewClient = hasContentfulConfig && import.meta.env.CONTENTFUL_PREVIEW_TOKEN ?
+  contentful.createClient({
+    space: import.meta.env.CONTENTFUL_SPACE_ID!,
+    accessToken: import.meta.env.CONTENTFUL_PREVIEW_TOKEN!,
+    host: 'preview.contentful.com',
+  }) : null;
 
 // Get the appropriate client
 export function getClient(preview = false) {
@@ -84,14 +88,24 @@ export type DriverStatsEntry = Entry<DriverStatsFields, undefined, string>;
  */
 export async function getRaces(season: string = '2026', preview = false): Promise<RaceEntry[]> {
   const client = getClient(preview);
-  
-  const entries = await client.getEntries<RaceFields>({
-    content_type: 'race',
-    'fields.season': season,
-    order: ['fields.date'],
-  });
-  
-  return entries.items;
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty races array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'race',
+      'fields.season': season,
+      order: ['fields.date'],
+    }) as { items: RaceEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch races from Contentful:', error);
+    return [];
+  }
 }
 
 /**
@@ -99,16 +113,26 @@ export async function getRaces(season: string = '2026', preview = false): Promis
  */
 export async function getUpcomingRaces(limit = 5, preview = false): Promise<RaceEntry[]> {
   const client = getClient(preview);
-  const today = new Date().toISOString().split('T')[0];
-  
-  const entries = await client.getEntries<RaceFields>({
-    content_type: 'race',
-    'fields.date[gte]': today,
-    order: ['fields.date'],
-    limit,
-  });
-  
-  return entries.items;
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty upcoming races array');
+    return [];
+  }
+
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const entries = await client.getEntries({
+      content_type: 'race',
+      'fields.date[gte]': today,
+      order: ['fields.date'],
+      limit,
+    }) as { items: RaceEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch upcoming races from Contentful:', error);
+    return [];
+  }
 }
 
 /**
@@ -124,14 +148,24 @@ export async function getNextRace(preview = false): Promise<RaceEntry | null> {
  */
 export async function getSponsors(preview = false): Promise<SponsorEntry[]> {
   const client = getClient(preview);
-  
-  const entries = await client.getEntries({
-    content_type: 'sponsor',
-    'fields.active': true,
-    order: ['fields.tier', 'fields.name'],
-  }) as any;
-  
-  return entries.items;
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty sponsors array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'sponsor',
+      'fields.active': true,
+      order: ['fields.tier', 'fields.name'],
+    }) as { items: SponsorEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch sponsors from Contentful:', error);
+    return [];
+  }
 }
 
 /**
@@ -139,15 +173,25 @@ export async function getSponsors(preview = false): Promise<SponsorEntry[]> {
  */
 export async function getSponsorsByTier(tier: 'guld' | 'sølv' | 'bronze', preview = false): Promise<SponsorEntry[]> {
   const client = getClient(preview);
-  
-  const entries = await client.getEntries({
-    content_type: 'sponsor',
-    'fields.active': true,
-    'fields.tier': tier,
-    order: ['fields.name'],
-  }) as any;
-  
-  return entries.items;
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty sponsors by tier array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'sponsor',
+      'fields.active': true,
+      'fields.tier': tier,
+      order: ['fields.name'],
+    }) as { items: SponsorEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch sponsors by tier from Contentful:', error);
+    return [];
+  }
 }
 
 /**
@@ -155,14 +199,24 @@ export async function getSponsorsByTier(tier: 'guld' | 'sølv' | 'bronze', previ
  */
 export async function getPageContent(slug: string, preview = false): Promise<PageContentEntry | null> {
   const client = getClient(preview);
-  
-  const entries = await client.getEntries({
-    content_type: 'pageContent',
-    'fields.slug': slug,
-    limit: 1,
-  }) as any;
-  
-  return entries.items[0] || null;
+
+  if (!client) {
+    console.warn(`Contentful client not configured - returning null for page: ${slug}`);
+    return null;
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'pageContent',
+      'fields.slug': slug,
+      limit: 1,
+    }) as { items: PageContentEntry[] };
+
+    return entries.items[0] || null;
+  } catch (error) {
+    console.warn(`Failed to fetch page content for "${slug}" from Contentful:`, error);
+    return null;
+  }
 }
 
 /**
@@ -170,14 +224,24 @@ export async function getPageContent(slug: string, preview = false): Promise<Pag
  */
 export async function getDriverStats(season: string = '2025', preview = false): Promise<DriverStatsEntry | null> {
   const client = getClient(preview);
-  
-  const entries = await client.getEntries({
-    content_type: 'driverStats',
-    'fields.season': season,
-    limit: 1,
-  }) as any;
-  
-  return entries.items[0] || null;
+
+  if (!client) {
+    console.warn(`Contentful client not configured - returning null for driver stats: ${season}`);
+    return null;
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'driverStats',
+      'fields.season': season,
+      limit: 1,
+    }) as { items: DriverStatsEntry[] };
+
+    return entries.items[0] || null;
+  } catch (error) {
+    console.warn(`Failed to fetch driver stats for season "${season}" from Contentful:`, error);
+    return null;
+  }
 }
 
 /**
@@ -185,20 +249,30 @@ export async function getDriverStats(season: string = '2025', preview = false): 
  */
 export async function getResults(season?: string, preview = false): Promise<RaceEntry[]> {
   const client = getClient(preview);
-  
-  const query: Record<string, unknown> = {
-    content_type: 'race',
-    'fields.result[exists]': true,
-    order: ['-fields.date'],
-  };
-  
-  if (season) {
-    query['fields.season'] = season;
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty results array');
+    return [];
   }
-  
-  const entries = await client.getEntries(query) as any;
-  
-  return entries.items;
+
+  try {
+    const query: Record<string, unknown> = {
+      content_type: 'race',
+      'fields.result[exists]': true,
+      order: ['-fields.date'],
+    };
+
+    if (season) {
+      query['fields.season'] = season;
+    }
+
+    const entries = await client.getEntries(query) as { items: RaceEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch results from Contentful:', error);
+    return [];
+  }
 }
 
 // ============================================
