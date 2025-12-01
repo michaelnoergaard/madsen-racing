@@ -1,0 +1,374 @@
+{
+  "contentTypes": [
+    {
+      "sys": {
+        "id": "race"
+      },
+      "name": "Race",
+      "description": "Racing events and competitions",
+      "displayField": "title",
+      "fields": [
+        {
+          "id": "title",
+          "name": "Title",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "date",
+          "name": "Date",
+          "type": "Date",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "track",
+          "name": "Track",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "location",
+          "name": "Location",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "country",
+          "name": "Country",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "championship",
+          "name": "Championship",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "result",
+          "name": "Result",
+          "type": "Integer",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 1,
+                "max": 100
+              }
+            }
+          ]
+        },
+        {
+          "id": "qualifying",
+          "name": "Qualifying",
+          "type": "Integer",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 1,
+                "max": 100
+              }
+            }
+          ]
+        },
+        {
+          "id": "fastestLap",
+          "name": "Fastest Lap",
+          "type": "Boolean",
+          "required": false,
+          "localized": false
+        },
+        {
+          "id": "points",
+          "name": "Points",
+          "type": "Integer",
+          "required": false,
+          "localized": false
+        },
+        {
+          "id": "facebookEvent",
+          "name": "Facebook Event",
+          "type": "Symbol",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "regexp": {
+                "pattern": "^(https?:\\/\\/)?(www\\.)?facebook\\.com\\/.+"
+              }
+            }
+          ]
+        },
+        {
+          "id": "notes",
+          "name": "Notes",
+          "type": "Text",
+          "required": false,
+          "localized": false
+        },
+        {
+          "id": "season",
+          "name": "Season",
+          "type": "Symbol",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "regexp": {
+                "pattern": "^\\d{4}$"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sys": {
+        "id": "sponsor"
+      },
+      "name": "Sponsor",
+      "description": "Racing team sponsors and partners",
+      "displayField": "name",
+      "fields": [
+        {
+          "id": "name",
+          "name": "Name",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "logo",
+          "name": "Logo",
+          "type": "Link",
+          "required": true,
+          "localized": false,
+          "linkType": "Asset"
+        },
+        {
+          "id": "website",
+          "name": "Website",
+          "type": "Symbol",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "regexp": {
+                "pattern": "^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$"
+              }
+            }
+          ]
+        },
+        {
+          "id": "tier",
+          "name": "Tier",
+          "type": "Symbol",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "in": ["guld", "sølv", "bronze"]
+            }
+          ]
+        },
+        {
+          "id": "description",
+          "name": "Description",
+          "type": "Text",
+          "required": false,
+          "localized": false
+        },
+        {
+          "id": "active",
+          "name": "Active",
+          "type": "Boolean",
+          "required": true,
+          "localized": false
+        }
+      ]
+    },
+    {
+      "sys": {
+        "id": "pageContent"
+      },
+      "name": "Page Content",
+      "description": "Content for static pages",
+      "displayField": "title",
+      "fields": [
+        {
+          "id": "slug",
+          "name": "Slug",
+          "type": "Symbol",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "unique": true
+            },
+            {
+              "regexp": {
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              }
+            }
+          ]
+        },
+        {
+          "id": "title",
+          "name": "Title",
+          "type": "Symbol",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "heroImage",
+          "name": "Hero Image",
+          "type": "Link",
+          "required": false,
+          "localized": false,
+          "linkType": "Asset"
+        },
+        {
+          "id": "content",
+          "name": "Content",
+          "type": "RichText",
+          "required": true,
+          "localized": false
+        },
+        {
+          "id": "seoDescription",
+          "name": "SEO Description",
+          "type": "Text",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "size": {
+                "max": 160
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sys": {
+        "id": "driverStats"
+      },
+      "name": "Driver Stats",
+      "description": "Season statistics for the driver",
+      "displayField": "season",
+      "fields": [
+        {
+          "id": "season",
+          "name": "Season",
+          "type": "Symbol",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "unique": true
+            },
+            {
+              "regexp": {
+                "pattern": "^\\d{4}$"
+              }
+            }
+          ]
+        },
+        {
+          "id": "totalRaces",
+          "name": "Total Races",
+          "type": "Integer",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "wins",
+          "name": "Wins",
+          "type": "Integer",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "podiums",
+          "name": "Podiums",
+          "type": "Integer",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "fastestLaps",
+          "name": "Fastest Laps",
+          "type": "Integer",
+          "required": true,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "championshipPosition",
+          "name": "Championship Position",
+          "type": "Integer",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "points",
+          "name": "Points",
+          "type": "Integer",
+          "required": false,
+          "localized": false,
+          "validations": [
+            {
+              "range": {
+                "min": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
