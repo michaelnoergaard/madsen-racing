@@ -12,7 +12,8 @@
  *   - CONTENTFUL_SPACE_ID environment variable set
  */
 
-import { createClient } from 'contentful-management';
+import pkg from 'contentful-management';
+const { createClient } = pkg;
 import 'dotenv/config';
 
 const SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
@@ -117,6 +118,18 @@ const contentModels = [
         name: 'Hero Image',
         type: 'Link',
         linkType: 'Asset',
+        required: false
+      },
+      {
+        id: 'heroHeadline',
+        name: 'Hero Headline',
+        type: 'Symbol',
+        required: false
+      },
+      {
+        id: 'heroSubtitle',
+        name: 'Hero Subtitle',
+        type: 'Text',
         required: false
       },
       { id: 'content', name: 'Content', type: 'RichText', required: true },

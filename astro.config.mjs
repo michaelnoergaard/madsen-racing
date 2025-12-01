@@ -13,5 +13,12 @@ export default defineConfig({
   i18n: {
     defaultLocale: 'da',
     locales: ['da']
+  },
+  vite: {
+    server: {
+      host: '0.0.0.0',
+      port: 4321,
+      allowedHosts: ['madsenracing.micnor.dk', 'madsenracing.dk']
+    }
   }
 });

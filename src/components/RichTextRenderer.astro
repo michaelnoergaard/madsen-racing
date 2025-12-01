@@ -1,0 +1,81 @@
+---
+// RichText renderer component for Contentful RichText content
+
+interface Props {
+  content: any; // Contentful RichText document
+  className?: string;
+}
+
+const { content, className = '' } = Astro.props;
+
+// Simple RichText renderer for Astro
+// In a production app, you might want to use a more sophisticated renderer
+function renderRichText(node: any): string {
+  if (!node) return '';
+
+  switch (node.nodeType) {
+    case 'document':
+      return node.content?.map(renderRichText).join('') || '';
+
+    case 'paragraph':
+      const paragraphContent = node.content?.map(renderRichText).join('') || '';
+      return `<p class="mb-4 text-mr-gray-300">${paragraphContent}</p>`;
+
+    case 'heading-1':
+      const h1Content = node.content?.map(renderRichText).join('') || '';
+      return `<h1 class="text-4xl md:text-5xl font-black mb-6 text-white font-display">${h1Content}</h1>`;
+
+    case 'heading-2':
+      const h2Content = node.content?.map(renderRichText).join('') || '';
+      return `<h2 class="text-3xl md:text-4xl font-black mb-4 text-white font-display">${h2Content}</h2>`;
+
+    case 'heading-3':
+      const h3Content = node.content?.map(renderRichText).join('') || '';
+      return `<h3 class="text-2xl md:text-3xl font-bold mb-3 text-white">${h3Content}</h3>`;
+
+    case 'text':
+      let text = node.value || '';
+      if (node.marks) {
+        for (const mark of node.marks) {
+          switch (mark.type) {
+            case 'bold':
+              text = `<strong class="font-bold">${text}</strong>`;
+              break;
+            case 'italic':
+              text = `<em class="italic">${text}</em>`;
+              break;
+            case 'underline':
+              text = `<u class="underline">${text}</u>`;
+              break;
+          }
+        }
+      }
+      return text;
+
+    case 'ul':
+      const listItems = node.content?.map(renderRichText).join('') || '';
+      return `<ul class="list-disc list-inside mb-4 text-mr-gray-300 space-y-2">${listItems}</ul>`;
+
+    case 'ol':
+      const orderedListItems = node.content?.map(renderRichText).join('') || '';
+      return `<ol class="list-decimal list-inside mb-4 text-mr-gray-300 space-y-2">${orderedListItems}</ol>`;
+
+    case 'li':
+      const liContent = node.content?.map(renderRichText).join('') || '';
+      return `<li>${liContent}</li>`;
+
+    case 'hr':
+      return '<hr class="border-mr-gray-700 my-8">';
+
+    case 'blockquote':
+      const quoteContent = node.content?.map(renderRichText).join('') || '';
+      return `<blockquote class="border-l-4 border-mr-yellow pl-4 italic text-mr-gray-400 my-4">${quoteContent}</blockquote>`;
+
+    default:
+      // Handle unknown node types
+      return node.content?.map(renderRichText).join('') || '';
+  }
+}
+---
+
+<div class={className} set:html={renderRichText(content)}></div>

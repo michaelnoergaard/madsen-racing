@@ -4,6 +4,7 @@ import contentful, { type EntryFieldTypes, type Entry } from 'contentful';
 const client = contentful.createClient({
   space: import.meta.env.CONTENTFUL_SPACE_ID,
   accessToken: import.meta.env.CONTENTFUL_ACCESS_TOKEN,
+  defaultLocale: 'da-DK',
 });
 
 // Preview client for draft content
@@ -11,6 +12,7 @@ const previewClient = contentful.createClient({
   space: import.meta.env.CONTENTFUL_SPACE_ID,
   accessToken: import.meta.env.CONTENTFUL_PREVIEW_TOKEN || '',
   host: 'preview.contentful.com',
+  defaultLocale: 'da-DK',
 });
 
 // Get the appropriate client
@@ -51,6 +53,8 @@ export interface PageContentFields {
   slug: EntryFieldTypes.Text;
   title: EntryFieldTypes.Text;
   heroImage?: EntryFieldTypes.AssetLink;
+  heroHeadline?: EntryFieldTypes.Text;
+  heroSubtitle?: EntryFieldTypes.Text;
   content: EntryFieldTypes.RichText;
   seoDescription?: EntryFieldTypes.Text;
 }
@@ -121,11 +125,11 @@ export async function getNextRace(preview = false): Promise<RaceEntry | null> {
 export async function getSponsors(preview = false): Promise<SponsorEntry[]> {
   const client = getClient(preview);
   
-  const entries = await client.getEntries<SponsorFields>({
+  const entries = await client.getEntries({
     content_type: 'sponsor',
     'fields.active': true,
     order: ['fields.tier', 'fields.name'],
-  });
+  }) as any;
   
   return entries.items;
 }
@@ -136,12 +140,12 @@ export async function getSponsors(preview = false): Promise<SponsorEntry[]> {
 export async function getSponsorsByTier(tier: 'guld' | 'sølv' | 'bronze', preview = false): Promise<SponsorEntry[]> {
   const client = getClient(preview);
   
-  const entries = await client.getEntries<SponsorFields>({
+  const entries = await client.getEntries({
     content_type: 'sponsor',
     'fields.active': true,
     'fields.tier': tier,
     order: ['fields.name'],
-  });
+  }) as any;
   
   return entries.items;
 }
@@ -152,11 +156,11 @@ export async function getSponsorsByTier(tier: 'guld' | 'sølv' | 'bronze', previ
 export async function getPageContent(slug: string, preview = false): Promise<PageContentEntry | null> {
   const client = getClient(preview);
   
-  const entries = await client.getEntries<PageContentFields>({
+  const entries = await client.getEntries({
     content_type: 'pageContent',
     'fields.slug': slug,
     limit: 1,
-  });
+  }) as any;
   
   return entries.items[0] || null;
 }
@@ -167,11 +171,11 @@ export async function getPageContent(slug: string, preview = false): Promise<Pag
 export async function getDriverStats(season: string = '2025', preview = false): Promise<DriverStatsEntry | null> {
   const client = getClient(preview);
   
-  const entries = await client.getEntries<DriverStatsFields>({
+  const entries = await client.getEntries({
     content_type: 'driverStats',
     'fields.season': season,
     limit: 1,
-  });
+  }) as any;
   
   return entries.items[0] || null;
 }
@@ -192,7 +196,7 @@ export async function getResults(season?: string, preview = false): Promise<Race
     query['fields.season'] = season;
   }
   
-  const entries = await client.getEntries<RaceFields>(query);
+  const entries = await client.getEntries(query) as any;
   
   return entries.items;
 }

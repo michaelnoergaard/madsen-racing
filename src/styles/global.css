@@ -1,9 +1,9 @@
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap');
 
 @layer base {
   html {
@@ -54,7 +54,7 @@
   
   /* Stat card */
   .stat-card {
-    @apply card text-center group;
+    @apply card text-center;
   }
   
   .stat-value {
@@ -137,7 +137,7 @@
   }
   
   .instagram-post {
-    @apply aspect-square rounded-xl overflow-hidden relative group cursor-pointer;
+    @apply aspect-square rounded-xl overflow-hidden relative cursor-pointer;
   }
   
   .instagram-overlay {

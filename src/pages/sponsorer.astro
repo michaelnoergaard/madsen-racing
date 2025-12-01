@@ -1,23 +1,62 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SponsorLogo from '../components/SponsorLogo.astro';
+import { getSponsorsByTier, getImageUrl } from '../lib/contentful';
 
-// TODO: Replace with Contentful data
-const sponsors = {
-  guld: [
-    { name: 'Guld Sponsor 1', tier: 'guld' },
-    { name: 'Guld Sponsor 2', tier: 'guld' },
-  ],
-  sølv: [
-    { name: 'Sølv Sponsor 1', tier: 'sølv' },
-    { name: 'Sølv Sponsor 2', tier: 'sølv' },
-    { name: 'Sølv Sponsor 3', tier: 'sølv' },
-  ],
-  bronze: [
-    { name: 'Bronze Sponsor 1', tier: 'bronze' },
-    { name: 'Bronze Sponsor 2', tier: 'bronze' },
-  ],
+interface Sponsor {
+  name: string;
+  tier: 'guld' | 'sølv' | 'bronze';
+  logo?: string;
+  website?: string;
+  description?: string;
+}
+
+// Get sponsors from Contentful
+let sponsors: {
+  guld: Sponsor[];
+  sølv: Sponsor[];
+  bronze: Sponsor[];
+} = {
+  guld: [],
+  sølv: [],
+  bronze: [],
 };
+
+try {
+  const sponsorsByTier = await Promise.all([
+    getSponsorsByTier('guld'),
+    getSponsorsByTier('sølv'),
+    getSponsorsByTier('bronze')
+  ]);
+
+  sponsors.guld = sponsorsByTier[0].map((sponsor: any) => ({
+    name: sponsor.fields.name,
+    tier: sponsor.fields.tier,
+    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
+    website: sponsor.fields.website,
+    description: sponsor.fields.description,
+  }));
+
+  sponsors.sølv = sponsorsByTier[1].map((sponsor: any) => ({
+    name: sponsor.fields.name,
+    tier: sponsor.fields.tier,
+    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
+    website: sponsor.fields.website,
+    description: sponsor.fields.description,
+  }));
+
+  sponsors.bronze = sponsorsByTier[2].map((sponsor: any) => ({
+    name: sponsor.fields.name,
+    tier: sponsor.fields.tier,
+    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
+    website: sponsor.fields.website,
+    description: sponsor.fields.description,
+  }));
+
+} catch (error) {
+  console.error('Error fetching sponsors:', error);
+  // Fallback to empty sponsors
+}
 
 const packages = [
   {

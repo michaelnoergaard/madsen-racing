@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Personlig website for Anton Madsen - Danish Karting Driver",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --host 0.0.0.0",
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
@@ -12,14 +12,18 @@
     "setup:contentful": "node scripts/setup-contentful.js"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.4",
-    "@astrojs/tailwind": "^5.1.2",
-    "astro": "^4.16.7",
-    "contentful": "^10.15.0",
-    "tailwindcss": "^3.4.14",
-    "typescript": "^5.6.3"
+    "@astrojs/check": "",
+    "@astrojs/tailwind": "",
+    "@contentful/rich-text-react-renderer": "^16.1.6",
+    "astro": "",
+    "contentful": "",
+    "contentful-management": "",
+    "dotenv": "",
+    "pm2": "^6.0.14",
+    "tailwindcss": "",
+    "typescript": ""
   },
   "devDependencies": {
-    "@types/node": "^22.8.1"
+    "@types/node": ""
   }
 }

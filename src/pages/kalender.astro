@@ -1,27 +1,56 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import RaceCard from '../components/RaceCard.astro';
+import { getRaces, formatDate } from '../lib/contentful';
 
-// TODO: Replace with Contentful data
-const races2026 = {
-  forår: [
-    { date: '15-16 Mar', name: 'DKM Runde 1', track: 'Roskilde Racing', highlight: true },
-    { date: '5-6 Apr', name: 'DKM Runde 2', track: 'Vojens Speedway' },
-    { date: '26-27 Apr', name: 'Nordic Championship', track: 'Asum Ring, Sverige' },
-    { date: '17-18 Maj', name: 'DKM Runde 3', track: 'Nysum Karting' },
-  ],
-  sommer: [
-    { date: '7-8 Jun', name: 'DKM Runde 4', track: 'Roskilde Racing' },
-    { date: '21-22 Jun', name: 'Rotax Nordic Final', track: 'Kristianstad, Sverige' },
-    { date: '12-13 Jul', name: 'DKM Runde 5', track: 'Vojens Speedway' },
-    { date: '9-10 Aug', name: 'DKM Runde 6', track: 'Nysum Karting' },
-  ],
-  efterår: [
-    { date: '30-31 Aug', name: 'Nordic Championship Final', track: 'Finland' },
-    { date: '20-21 Sep', name: 'DKM Finale', track: 'Roskilde Racing' },
-    { date: '11-12 Okt', name: 'International Trophy', track: 'Genk, Belgien' },
-  ]
+// Get 2026 races from Contentful
+let allRaces = [];
+
+try {
+  const races = await getRaces('2026');
+  allRaces = races.map(race => ({
+    date: formatDate(race.fields.date),
+    name: race.fields.title,
+    track: race.fields.track,
+    highlight: false, // Could be determined by championship importance
+    result: race.fields.result,
+    championship: race.fields.championship,
+    country: race.fields.country,
+    notes: race.fields.notes,
+    originalDate: race.fields.date, // Keep original date for seasonal grouping
+  }));
+} catch (error) {
+  console.error('Error fetching races:', error);
+  // Fallback to empty races
+}
+
+// Group races by season
+const groupRacesBySeason = (races) => {
+  const forår = [];
+  const sommer = [];
+  const efterår = [];
+
+  races.forEach(race => {
+    // Try to extract month from the original date (YYYY-MM-DD format)
+    const dateStr = race.originalDate;
+
+    if (dateStr) {
+      const month = new Date(dateStr).getMonth() + 1; // getMonth() is 0-indexed
+
+      if (month >= 3 && month <= 5) { // March-May
+        forår.push(race);
+      } else if (month >= 6 && month <= 8) { // June-August
+        sommer.push(race);
+      } else if (month >= 9 && month <= 11) { // September-November
+        efterår.push(race);
+      }
+    }
+  });
+
+  return { forår, sommer, efterår };
 };
+
+const races2026 = groupRacesBySeason(allRaces);
 ---
 
 <Layout 

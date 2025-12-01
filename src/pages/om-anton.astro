@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getPageContent, getImageUrl } from '../lib/contentful';
+import RichTextRenderer from '../components/RichTextRenderer.astro';
 
-// TODO: Replace with Contentful data
+// Driver info - keep hardcoded as it's consistent personal info
 const driverInfo = {
   name: 'Anton Madsen',
   age: 14,
@@ -12,6 +14,25 @@ const driverInfo = {
   number: 22,
   startYear: 2019
 };
+
+// Get about page content from Contentful
+let aboutContent = null;
+let heroImage = '';
+let heroHeadline = '';
+let heroSubtitle = '';
+
+try {
+  const content = await getPageContent('om-anton');
+  if (content) {
+    aboutContent = content.fields.content;
+    heroImage = content.fields.heroImage ? getImageUrl(content.fields.heroImage, 800) : '';
+    heroHeadline = content.fields.heroHeadline || '';
+    heroSubtitle = content.fields.heroSubtitle || '';
+  }
+} catch (error) {
+  console.error('Error fetching about content:', error);
+  // Fallback to empty - will use hardcoded content
+}
 ---
 
 <Layout 
@@ -23,18 +44,24 @@ const driverInfo = {
     <div class="max-w-6xl mx-auto px-4">
       <div class="grid md:grid-cols-2 gap-12 items-center">
         <div class="animate-fade-in">
-          <h1 class="text-4xl md:text-5xl font-black mb-4 font-display">
-            HEJ, JEG ER <span class="text-mr-yellow">ANTON</span>
-          </h1>
-          <p class="text-mr-gray-300 text-lg mb-6">
-            Jeg er en {driverInfo.age}-årig karting-kører fra Danmark med en brændende passion for motorsport. 
-            Siden jeg satte mig bag rattet første gang i {driverInfo.startYear}, har jeg drømt om at nå toppen.
-          </p>
-          <p class="text-mr-gray-400 mb-8">
-            Hver gang jeg trækker i hjelmen og kører ud på banen, giver jeg alt hvad jeg har. 
-            Det handler ikke bare om at vinde - det handler om at blive bedre for hver eneste omgang, 
-            lære af fejlene og aldrig give op.
-          </p>
+          <h1 class="text-4xl md:text-5xl font-black mb-4 font-display" set:html={heroHeadline || 'HEJ, JEG ER <span class="text-mr-yellow">ANTON</span>'}></h1>
+
+          {heroSubtitle ? (
+            <div set:html={heroSubtitle.split('\n\n').map(p => `<p class="text-mr-gray-300 text-lg mb-6">${p}</p>`).join('')}></div>
+          ) : (
+            <>
+              <p class="text-mr-gray-300 text-lg mb-6">
+                Jeg er en {driverInfo.age}-årig karting-kører fra Danmark med en brændende passion for motorsport.
+                Siden jeg satte mig bag rattet første gang i {driverInfo.startYear}, har jeg drømt om at nå toppen.
+              </p>
+              <p class="text-mr-gray-400 mb-8">
+                Hver gang jeg trækker i hjelmen og kører ud på banen, giver jeg alt hvad jeg har.
+                Det handler ikke bare om at vinde - det handler om at blive bedre for hver eneste omgang,
+                lære af fejlene og aldrig give op.
+              </p>
+            </>
+          )}
+
           <div class="flex gap-4">
             <a href="/sponsorer" class="btn-primary">
               STØT MIN REJSE
@@ -100,19 +127,28 @@ const driverInfo = {
     </div>
   </section>
 
+  <!-- Contentful Page Content -->
+  {aboutContent ? (
+    <section class="section bg-mr-black">
+      <div class="max-w-4xl mx-auto px-4">
+        <RichTextRenderer content={aboutContent} className="prose prose-invert max-w-none" />
+      </div>
+    </section>
+  ) : null}
+
   <!-- Dream Section -->
   <section class="section bg-mr-gray-900/50">
     <div class="max-w-4xl mx-auto px-4 text-center">
       <h2 class="section-title mb-8">MIN <span class="text-mr-yellow">DRØM</span></h2>
-      
+
       <blockquote class="text-2xl md:text-3xl text-mr-gray-300 italic mb-8">
-        "Mit mål er at nå Formula 1. Det er en lang vej, men jeg arbejder hårdt hver dag 
+        "Mit mål er at nå Formula 1. Det er en lang vej, men jeg arbejder hårdt hver dag
         for at komme tættere på drømmen."
       </blockquote>
-      
+
       <p class="text-mr-gray-400">
-        Vejen til toppen starter med karting. Herfra går turen gennem Formula 4, Formula 3, 
-        Formula 2 - og forhåbentlig en dag Formula 1. Det kræver talent, hårdt arbejde og 
+        Vejen til toppen starter med karting. Herfra går turen gennem Formula 4, Formula 3,
+        Formula 2 - og forhåbentlig en dag Formula 1. Det kræver talent, hårdt arbejde og
         støtte fra fantastiske sponsorer og fans.
       </p>
     </div>

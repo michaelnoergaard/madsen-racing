@@ -5,29 +5,57 @@ import StatCard from '../components/StatCard.astro';
 import InstagramFeed from '../components/InstagramFeed.astro';
 import RaceCard from '../components/RaceCard.astro';
 import SponsorLogo from '../components/SponsorLogo.astro';
+import { getDriverStats, getUpcomingRaces, getSponsors, formatDate, getImageUrl } from '../lib/contentful';
 
-// TODO: Replace with Contentful data
-const stats = [
-  { value: '24', label: 'Løb 2025' },
-  { value: '6', label: 'Sejre' },
-  { value: '12', label: 'Podier' },
-  { value: '8', label: 'Hurtigste omgange' },
-];
+// Fetch data from Contentful
+let stats = [];
+let upcomingRaces = [];
+let sponsors = [];
 
-const upcomingRaces = [
-  { date: '15-16 Mar', name: 'DKM Runde 1', track: 'Roskilde Racing', highlight: true },
-  { date: '5-6 Apr', name: 'DKM Runde 2', track: 'Vojens Speedway' },
-  { date: '26-27 Apr', name: 'Nordic Championship', track: 'Asum Ring, Sverige' },
-  { date: '17-18 Maj', name: 'DKM Runde 3', track: 'Nysum Karting' },
-];
+try {
+  // Get 2025 driver stats for homepage
+  const driverStats = await getDriverStats('2025');
+  if (driverStats) {
+    const fields = driverStats.fields;
+    stats = [
+      { value: fields.totalRaces?.toString() || '0', label: 'Løb 2025' },
+      { value: fields.wins?.toString() || '0', label: 'Sejre' },
+      { value: fields.podiums?.toString() || '0', label: 'Podier' },
+      { value: fields.fastestLaps?.toString() || '0', label: 'Hurtigste omgange' },
+    ];
+  }
+} catch (error) {
+  console.error('Error fetching driver stats:', error);
+  // Fallback to empty stats
+}
 
-const sponsors = [
-  { name: 'Sponsor 1', tier: 'guld' },
-  { name: 'Sponsor 2', tier: 'guld' },
-  { name: 'Sponsor 3', tier: 'sølv' },
-  { name: 'Sponsor 4', tier: 'sølv' },
-  { name: 'Sponsor 5', tier: 'bronze' },
-];
+try {
+  // Get upcoming races
+  const races = await getUpcomingRaces(4);
+  upcomingRaces = races.map(race => ({
+    date: formatDate(race.fields.date),
+    name: race.fields.title,
+    track: race.fields.track,
+    highlight: false, // Could be determined based on importance
+  }));
+} catch (error) {
+  console.error('Error fetching upcoming races:', error);
+  // Fallback to empty races
+}
+
+try {
+  // Get active sponsors
+  const sponsorEntries = await getSponsors();
+  sponsors = sponsorEntries.map(sponsor => ({
+    name: sponsor.fields.name,
+    tier: sponsor.fields.tier,
+    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
+    website: sponsor.fields.website,
+  }));
+} catch (error) {
+  console.error('Error fetching sponsors:', error);
+  // Fallback to empty sponsors
+}
 ---
 
 <Layout title="Hjem">

@@ -2,29 +2,63 @@
 import Layout from '../layouts/Layout.astro';
 import StatCard from '../components/StatCard.astro';
 import RaceCard from '../components/RaceCard.astro';
+import { getDriverStats, getResults, formatDate } from '../lib/contentful';
 
-// TODO: Replace with Contentful data
-const stats2025 = [
-  { value: '24', label: 'Løb' },
-  { value: '6', label: 'Sejre' },
-  { value: '12', label: 'Podier' },
-  { value: '8', label: 'Hurtigste omgange' },
-];
+// Get 2025 driver stats and results from Contentful
+let stats2025 = [];
+let results2025 = [];
 
-const results2025 = [
-  { date: '15 Okt', name: 'DKM Finale', track: 'Roskilde Racing', result: 1 },
-  { date: '28 Sep', name: 'Nordic Championship', track: 'Asum Ring', result: 2 },
-  { date: '14 Sep', name: 'DKM Runde 6', track: 'Vojens Speedway', result: 1 },
-  { date: '24 Aug', name: 'DKM Runde 5', track: 'Nysum Karting', result: 3 },
-  { date: '10 Aug', name: 'Rotax Nordic Final', track: 'Kristianstad', result: 4 },
-  { date: '27 Jul', name: 'DKM Runde 4', track: 'Roskilde Racing', result: 1 },
-];
+try {
+  const driverStats = await getDriverStats('2025');
+  if (driverStats) {
+    const fields = driverStats.fields;
+    stats2025 = [
+      { value: fields.totalRaces?.toString() || '0', label: 'Løb' },
+      { value: fields.wins?.toString() || '0', label: 'Sejre' },
+      { value: fields.podiums?.toString() || '0', label: 'Podier' },
+      { value: fields.fastestLaps?.toString() || '0', label: 'Hurtigste omgange' },
+    ];
+  }
+} catch (error) {
+  console.error('Error fetching driver stats:', error);
+  // Fallback to empty stats
+}
 
-const highlights = [
-  { title: 'DKM Mester 2025', description: 'Vandt det Danske Kart Mesterskab i OK Junior klassen' },
-  { title: '6 sejre i træk', description: 'Sæsonrekord med 6 consecutive race wins' },
-  { title: 'Nordic Championship P2', description: 'Sølvmedalje ved Nordic Championship' },
-];
+try {
+  const races = await getResults('2025');
+  results2025 = races.map(race => ({
+    date: formatDate(race.fields.date),
+    name: race.fields.title,
+    track: race.fields.track,
+    result: race.fields.result,
+    notes: race.fields.notes,
+  }));
+} catch (error) {
+  console.error('Error fetching results:', error);
+  // Fallback to empty results
+}
+
+// Generate highlights based on stats
+const highlights = [];
+if (stats2025.length > 0) {
+  const wins = parseInt(stats2025[1].value) || 0;
+  const podiums = parseInt(stats2025[2].value) || 0;
+  const championshipPosition = 2; // Could be fetched from driver stats
+
+  if (championshipPosition === 1) {
+    highlights.push({ title: 'DKM Mester 2025', description: 'Vandt det Danske Kart Mesterskab i OK Junior klassen' });
+  } else if (championshipPosition === 2) {
+    highlights.push({ title: 'DKM Vice-mester 2025', description: 'Sølvmedalje i Dansk Kart Mesterskab' });
+  }
+
+  if (wins > 0) {
+    highlights.push({ title: `${wins} sejre${wins > 1 ? ' i sæsonen' : ''}`, description: `Fantastisk sæson med ${wins} sejr${wins > 1 ? 'er' : ''}` });
+  }
+
+  if (podiums >= 10) {
+    highlights.push({ title: `${podiums} podiumplaceringer`, description: 'Imponerende konsistens gennem hele sæsonen' });
+  }
+}
 ---
 
 <Layout 
