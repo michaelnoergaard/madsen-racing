@@ -63,11 +63,14 @@ npm install contentful-management dotenv
 npm run setup:contentful
 ```
 
-This will automatically create all 4 content models:
+This will automatically create all 7 content models:
 - ✅ Race
 - ✅ Sponsor
 - ✅ Page Content
 - ✅ Driver Stats
+- ✅ Media Item (NEW!) - Photos and images for the gallery
+- ✅ Video (NEW!) - YouTube videos for the video gallery
+- ✅ Press Photo (NEW!) - High-resolution photos for press/media
 
 ### Option B: Contentful CLI
 
@@ -139,6 +142,56 @@ Follow the detailed field definitions in the main README.md
    ```
 4. Click **Publish**
 
+### 3.4 Add Media Content (NEW!)
+
+#### Add a Photo:
+1. Upload image first: **Media** → **Add asset** → Upload photo → Publish
+2. **Add entry** → **Media Item**
+3. Fill in:
+   ```
+   Title: "Overtaking at Roskilde"
+   Description: "Anton makes a beautiful pass on the inside"
+   File: [Select uploaded image]
+   Category: "racing-action"
+   Date: [Photo date]
+   Photographer: "Photo by Racing Media"
+   Location: "Roskilde Racing"
+   Featured: Yes
+   ```
+4. Click **Publish**
+
+#### Add a Video:
+1. **Add entry** → **Video**
+2. Fill in:
+   ```
+   Title: "Race Highlights - DKM Runde 1"
+   Description: "Best moments from Anton's race at Roskilde"
+   YouTube Video ID: "dQw4w9WgXcQ" (from youtube.com/watch?v=dQw4w9WgXcQ)
+   YouTube URL: "https://youtube.com/watch?v=dQw4w9WgXcQ"
+   Category: "racing-action"
+   Duration: 180
+   Date: [Video date]
+   Featured: Yes
+   ```
+3. Click **Publish**
+
+#### Add a Press Photo:
+1. Upload high-resolution image: **Media** → **Add asset** → Upload HD photo → Publish
+2. **Add entry** → **Press Photo**
+3. Fill in:
+   ```
+   Title: "Anton on Podium - DKM Championship"
+   Description: "Official podium celebration photo"
+   File: [Select HD image]
+   Photographer: "Pro Photo Agency"
+   Date Taken: [Date]
+   Location: "Roskilde Racing"
+   Event: "DKM Championship Final"
+   Downloadable: Yes
+   Usage Rights: "Free for editorial use with photo credit"
+   ```
+4. Click **Publish**
+
 ---
 
 ## ✅ Step 4: Test the Connection
@@ -153,6 +206,16 @@ npm run dev
 ```
 
 You should now see your content from Contentful!
+
+### 4.3 Test the Gallery
+
+Visit `http://localhost:4321/galleri` to see:
+- ✅ Featured images section (if any media items marked as "featured")
+- ✅ Main photo gallery with all uploaded images
+- ✅ Video highlights section (if any videos added)
+- ✅ Category filtering ("ALLE", "RACING ACTION", "BEHIND SCENES", etc.)
+- ✅ Responsive grid layout that works on mobile
+- ✅ Lightbox when clicking on images
 
 ### 4.2 Verify API Connection
 
@@ -229,6 +292,45 @@ podiums             - Podium finishes (P1-P3)
 fastestLaps         - Number of fastest laps
 championshipPosition - Final championship position
 points              - Total championship points
+```
+
+### Media Item (NEW!)
+```
+title              - Photo title (required)
+description        - Photo description
+file               - Image file (required)
+category           - racing-action, behind-scenes, or professional (required)
+date               - Photo date
+tags               - Tags array (e.g., ["overtake", "podium"])
+photographer       - Photographer name
+location           - Where photo was taken
+featured           - Show in featured section?
+```
+
+### Video (NEW!)
+```
+title              - Video title (required)
+description        - Video description
+youtubeVideoId     - YouTube video ID (required)
+youtubeUrl         - Full YouTube video URL
+thumbnail          - Custom thumbnail image
+duration           - Video length in seconds
+category           - racing-action, behind-scenes, professional, or interviews
+date               - Video date
+featured           - Show in featured section?
+```
+
+### Press Photo (NEW!)
+```
+title              - Photo title (required)
+description        - Photo description
+file               - High-resolution image (required)
+photographer       - Photographer name (required)
+date               - Date taken (required)
+location           - Location (required)
+event              - Event name
+downloadable       - Allow downloads?
+usageRights        - Usage rights information
 ```
 
 ---
