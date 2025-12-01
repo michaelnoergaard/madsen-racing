@@ -16,53 +16,32 @@ This repository is configured to automatically build Docker images on every push
    - Creates a Software Bill of Materials (SBOM) for security
 
 3. **Image Tags**:
-   - `docker.io/michaelnoergaard/madsen-racing:latest` (main branch)
-   - `docker.io/michaelnoergaard/madsen-racing:main-<commit-sha>` (specific commits)
-   - `docker.io/michaelnoergaard/madsen-racing:pr-<number>` (pull requests)
+   - `ghcr.io/michaelnoergaard/madsen-racing:latest` (main branch)
+   - `ghcr.io/michaelnoergaard/madsen-racing:main-<commit-sha>` (specific commits)
+   - `ghcr.io/michaelnoergaard/madsen-racing:pr-<number>` (pull requests)
 
 ## Required Setup
 
-### 1. Docker Hub Credentials
+### GitHub Container Registry (No Setup Required!)
 
-Add these secrets to your GitHub repository settings:
+This workflow uses **GitHub Container Registry** which requires no additional configuration:
+- ✅ **No secrets to configure** - uses GitHub's built-in authentication
+- ✅ **No external accounts** - integrated directly with your GitHub repository
+- ✅ **Automatic permissions** - works with your existing GitHub access
 
-1. Go to your repository on GitHub
-2. Click **Settings** → **Secrets and variables** → **Actions**
-3. Add the following repository secrets:
-
-#### DOCKER_USERNAME
-- Your Docker Hub username
-- Example: `michaelnoergaard`
-
-#### DOCKER_PASSWORD
-- Your Docker Hub personal access token (NOT your password)
-- Get one here: https://hub.docker.com/settings/security
-
-### 2. Create Docker Hub Token (Recommended)
-
-1. Log in to [Docker Hub](https://hub.docker.com)
-2. Go to **Account Settings** → **Security**
-3. Click **New Access Token**
-4. Give it a descriptive name (e.g., `github-madsen-racing`)
-5. Set appropriate permissions (read/write for your repositories)
-6. Copy the generated token and use it as `DOCKER_PASSWORD`
-
-### 3. Create Docker Hub Repository (if not exists)
-
-The workflow expects a repository named `madsen-racing` in your Docker Hub account.
-Create it at: https://hub.docker.com/repository/create
+The images will be automatically available at: `ghcr.io/michaelnoergaard/madsen-racing`
 
 ## Running the Docker Image
 
 ```bash
 # Pull the latest image
-docker pull michaelnoergaard/madsen-racing:latest
+docker pull ghcr.io/michaelnoergaard/madsen-racing:latest
 
 # Run the container
-docker run -p 4321:4321 michaelnoergaard/madsen-racing:latest
+docker run -p 4321:4321 ghcr.io/michaelnoergaard/madsen-racing:latest
 
 # Run with volume for persistent data (if needed)
-docker run -p 4321:4321 -v $(pwd)/data:/app/data michaelnoergaard/madsen-racing:latest
+docker run -p 4321:4321 -v $(pwd)/data:/app/data ghcr.io/michaelnoergaard/madsen-racing:latest
 ```
 
 ## Development
@@ -75,6 +54,10 @@ docker build -t madsen-racing .
 
 # Run locally
 docker run -p 4321:4321 madsen-racing
+
+# Or pull and run the built image from GitHub
+docker pull ghcr.io/michaelnoergaard/madsen-racing:latest
+docker run -p 4321:4321 ghcr.io/michaelnoergaard/madsen-racing:latest
 ```
 
 ### Environment Variables
