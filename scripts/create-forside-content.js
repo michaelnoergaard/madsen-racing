@@ -5,8 +5,10 @@
  * for the Madsen Racing website.
  */
 
-require('dotenv').config();
-const contentfulManagement = require('contentful-management');
+import dotenv from 'dotenv';
+import contentfulManagement from 'contentful-management';
+
+dotenv.config();
 
 // Get credentials from environment
 const managementToken = process.env.CONTENTFUL_MANAGEMENT_TOKEN;
@@ -52,16 +54,28 @@ async function createForsideContent() {
       entry.fields = {
         ...entry.fields,
         title: {
-          'da-DK': 'Forside'
+          'en-US': 'Forside'
         },
-        heroHeadline: {
-          'da-DK': 'ANTON <span class="text-mr-yellow">MADSEN</span>'
+        primaryButtonText: {
+          'da-DK': 'FØLG PÅ INSTAGRAM'
         },
-        heroSubtitle: {
-          'da-DK': 'DANISH KARTING DRIVER • MADSEN RACING • NUMBER 22'
+        primaryButtonUrl: {
+          'da-DK': 'https://instagram.com/madsenracing22'
+        },
+        primaryButtonNewTab: {
+          'da-DK': true
+        },
+        secondaryButtonText: {
+          'da-DK': 'BLIV SPONSOR'
+        },
+        secondaryButtonUrl: {
+          'da-DK': '/sponsorer'
+        },
+        secondaryButtonNewTab: {
+          'da-DK': false
         },
         content: {
-          'da-DK': {
+          'en-US': {
             nodeType: 'document',
             data: {},
             content: [
@@ -71,7 +85,7 @@ async function createForsideContent() {
                 content: [
                   {
                     nodeType: 'text',
-                    value: 'Velkommen til Anton Madsens officielle hjemmeside. Følg med i hans spændende karriere som dansk karting kører.',
+                    value: 'Welcome to Anton Madsen\'s official website. Follow his exciting career as a Danish karting driver.',
                     marks: [],
                     data: {}
                   }
@@ -81,7 +95,7 @@ async function createForsideContent() {
           }
         },
         seoDescription: {
-          'da-DK': 'Anton Madsen - talentfuld dansk karting kører. Følg med i hans resultater, kampprogram og nyheder fra karting verdenen.'
+          'en-US': 'Anton Madsen - talented Danish karting driver. Follow his results, race schedule and news from the karting world.'
         }
       };
 
@@ -94,19 +108,31 @@ async function createForsideContent() {
       const entry = await environment.createEntry('pageContent', {
         fields: {
           slug: {
-            'da-DK': 'forside'
+            'en-US': 'forside'
           },
           title: {
-            'da-DK': 'Forside'
+            'en-US': 'Forside'
           },
-          heroHeadline: {
-            'da-DK': 'ANTON <span class="text-mr-yellow">MADSEN</span>'
+          primaryButtonText: {
+            'da-DK': 'FØLG PÅ INSTAGRAM'
           },
-          heroSubtitle: {
-            'da-DK': 'DANISH KARTING DRIVER • MADSEN RACING • NUMBER 22'
+          primaryButtonUrl: {
+            'da-DK': 'https://instagram.com/madsenracing22'
+          },
+          primaryButtonNewTab: {
+            'da-DK': true
+          },
+          secondaryButtonText: {
+            'da-DK': 'BLIV SPONSOR'
+          },
+          secondaryButtonUrl: {
+            'da-DK': '/sponsorer'
+          },
+          secondaryButtonNewTab: {
+            'da-DK': false
           },
           content: {
-            'da-DK': {
+            'en-US': {
               nodeType: 'document',
               data: {},
               content: [
@@ -116,7 +142,7 @@ async function createForsideContent() {
                   content: [
                     {
                       nodeType: 'text',
-                      value: 'Velkommen til Anton Madsens officielle hjemmeside. Følg med i hans spændende karriere som dansk karting kører.',
+                      value: 'Welcome to Anton Madsen\'s official website. Follow his exciting career as a Danish karting driver.',
                       marks: [],
                       data: {}
                     }
@@ -126,7 +152,7 @@ async function createForsideContent() {
             }
           },
           seoDescription: {
-            'da-DK': 'Anton Madsen - talentfuld dansk karting kører. Følg med i hans resultater, kampprogram og nyheder fra karting verdenen.'
+            'en-US': 'Anton Madsen - talented Danish karting driver. Follow his results, race schedule and news from the karting world.'
           }
         }
       });

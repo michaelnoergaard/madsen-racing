@@ -53,12 +53,26 @@ export interface SponsorFields {
   active: EntryFieldTypes.Boolean;
 }
 
+export interface ButtonFields {
+  text: EntryFieldTypes.Symbol;
+  url: EntryFieldTypes.Symbol;
+  openInNewTab?: EntryFieldTypes.Boolean;
+}
+
 export interface PageContentFields {
   slug: EntryFieldTypes.Text;
   title: EntryFieldTypes.Text;
   heroImage?: EntryFieldTypes.AssetLink;
   heroHeadline?: EntryFieldTypes.Text;
   heroSubtitle?: EntryFieldTypes.Text;
+  primaryButtonText?: EntryFieldTypes.Symbol;
+  primaryButtonUrl?: EntryFieldTypes.Symbol;
+  primaryButtonPage?: EntryFieldTypes.EntryLink<PageContent>;
+  primaryButtonNewTab?: EntryFieldTypes.Boolean;
+  secondaryButtonText?: EntryFieldTypes.Symbol;
+  secondaryButtonUrl?: EntryFieldTypes.Symbol;
+  secondaryButtonPage?: EntryFieldTypes.EntryLink<PageContent>;
+  secondaryButtonNewTab?: EntryFieldTypes.Boolean;
   content: EntryFieldTypes.RichText;
   seoDescription?: EntryFieldTypes.Text;
 }
