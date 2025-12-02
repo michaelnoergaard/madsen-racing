@@ -44,7 +44,9 @@
       "Bash(docker push:*)",
       "Bash(npm view:*)",
       "Bash(npx astro check:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

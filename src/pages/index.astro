@@ -5,7 +5,7 @@ import StatCard from '../components/StatCard.astro';
 import InstagramFeed from '../components/InstagramFeed.astro';
 import RaceCard from '../components/RaceCard.astro';
 import SponsorLogo from '../components/SponsorLogo.astro';
-import { getDriverStats, getUpcomingRaces, getSponsors, formatDate, getImageUrl } from '../lib/contentful';
+import { getDriverStats, getUpcomingRaces, getSponsors, formatDate, getImageUrl, getPageContent } from '../lib/contentful';
 
 // Fetch data from Contentful
 let stats = [];
@@ -56,13 +56,42 @@ try {
   console.error('Error fetching sponsors:', error);
   // Fallback to empty sponsors
 }
+
+// Fetch front page content from Contentful
+let heroImage = '';
+let heroHeadline = 'ANTON <span class="text-mr-yellow">MADSEN</span>';
+let heroSubtitle = 'DANISH KARTING DRIVER • MADSEN RACING • NUMBER 22';
+
+try {
+  const forsideContent = await getPageContent('forside');
+  if (forsideContent) {
+    heroImage = forsideContent.fields.heroImage ? getImageUrl(forsideContent.fields.heroImage, 1920) : '';
+    heroHeadline = forsideContent.fields.heroHeadline || heroHeadline;
+    heroSubtitle = forsideContent.fields.heroSubtitle || heroSubtitle;
+  }
+} catch (error) {
+  console.error('Error fetching forside content:', error);
+  // Fallback to current hardcoded values
+}
 ---
 
 <Layout title="Hjem">
   <!-- Hero Section -->
   <section class="relative h-screen flex items-center justify-center overflow-hidden">
-    <!-- Background -->
-    <div class="absolute inset-0 bg-mr-gradient-dark">
+    <!-- Background with conditional image support -->
+    {heroImage ? (
+      <!-- Dynamic background image -->
+      <div
+        class="hero-background hero-background-loaded"
+        style={`background-image: url('${heroImage}')`}
+      ></div>
+    ) : (
+      <!-- Fallback gradient background -->
+      <div class="absolute inset-0 bg-mr-gradient-dark"></div>
+    )}
+
+    <!-- Common overlay elements -->
+    <div class="hero-background-overlay">
       <!-- Pattern overlay -->
       <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMyMjIiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi00LTJoLTRjLTIgMC00IDItNCAyczIgNCA0IDRoNHoiLz48L2c+PC9nPjwvc3ZnPg==')"></div>
       <!-- Racing stripes -->
@@ -71,22 +100,21 @@ try {
     </div>
 
     <!-- Hero Content -->
-    <div class="relative z-10 text-center px-4 animate-fade-in">
+    <div class="hero-content px-4 animate-fade-in">
       <!-- Driver Number -->
       <div class="mb-4">
         <span class="inline-block text-8xl md:text-9xl font-black gradient-text leading-none font-display">
           22
         </span>
       </div>
-      
-      <!-- Name -->
-      <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-2 font-display">
-        ANTON <span class="text-mr-yellow">MADSEN</span>
+
+      <!-- Dynamic Name -->
+      <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-2 font-display" set:html={heroHeadline}>
       </h1>
-      
-      <!-- Tagline -->
+
+      <!-- Dynamic Tagline -->
       <p class="text-mr-gray-400 text-sm md:text-base tracking-widest mb-8">
-        DANISH KARTING DRIVER • MADSEN RACING
+        {heroSubtitle}
       </p>
 
       <!-- CTA Buttons -->

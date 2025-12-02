@@ -10,6 +10,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "setup:contentful": "node scripts/setup-contentful.js",
+    "setup:forside": "node scripts/create-forside-content.js",
     "docker:build": "docker build -t madsen-racing .",
     "docker:run": "docker run -p 4321:4321 madsen-racing",
     "docker:local": "docker-compose up --build",
