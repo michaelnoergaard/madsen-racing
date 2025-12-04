@@ -137,6 +137,25 @@ export interface PressPhotoFields {
   fileSize: EntryFieldTypes.Integer;
 }
 
+export interface SponsorPackageFields {
+  name: EntryFieldTypes.Text;
+  tier: EntryFieldTypes.Symbol; // 'bronze' | 'silver' | 'gold'
+  price: EntryFieldTypes.Integer;
+  priceLabel?: EntryFieldTypes.Text;
+  features: EntryFieldTypes.Array<EntryFieldTypes.Symbol>;
+  displayOrder: EntryFieldTypes.Integer;
+  active: EntryFieldTypes.Boolean;
+}
+
+export interface PageSectionFields {
+  key: EntryFieldTypes.Symbol;
+  page: EntryFieldTypes.Symbol;
+  heading?: EntryFieldTypes.Text;
+  description?: EntryFieldTypes.Text;
+  buttonText?: EntryFieldTypes.Text;
+  buttonUrl?: EntryFieldTypes.Text;
+}
+
 // Type aliases for entries
 export type RaceEntry = Entry<RaceFields, undefined, string>;
 export type SponsorEntry = Entry<SponsorFields, undefined, string>;
@@ -146,6 +165,8 @@ export type MediaGalleryEntry = Entry<MediaGalleryFields, undefined, string>;
 export type MediaItemEntry = Entry<MediaItemFields, undefined, string>;
 export type VideoEntry = Entry<VideoFields, undefined, string>;
 export type PressPhotoEntry = Entry<PressPhotoFields, undefined, string>;
+export type SponsorPackageEntry = Entry<SponsorPackageFields, undefined, string>;
+export type PageSectionEntry = Entry<PageSectionFields, undefined, string>;
 
 // ============================================
 // Data Fetching Functions
@@ -632,5 +653,113 @@ export async function searchMediaItems(query: string, preview = false): Promise<
   } catch (error) {
     console.warn('Failed to search media items from Contentful:', error);
     return [];
+  }
+}
+
+// ============================================
+// Sponsor Package Functions
+// ============================================
+
+/**
+ * Get all active sponsor packages
+ */
+export async function getSponsorPackages(preview = false): Promise<SponsorPackageEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning empty sponsor packages array');
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'sponsorPackage',
+      'fields.active': true,
+      order: ['fields.displayOrder'],
+    }) as { items: SponsorPackageEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn('Failed to fetch sponsor packages from Contentful:', error);
+    return [];
+  }
+}
+
+/**
+ * Get sponsor package by tier
+ */
+export async function getSponsorPackageByTier(tier: 'bronze' | 'silver' | 'gold', preview = false): Promise<SponsorPackageEntry | null> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn(`Contentful client not configured - returning null for sponsor package: ${tier}`);
+    return null;
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'sponsorPackage',
+      'fields.active': true,
+      'fields.tier': tier,
+      limit: 1,
+    }) as { items: SponsorPackageEntry[] };
+
+    return entries.items[0] || null;
+  } catch (error) {
+    console.warn(`Failed to fetch sponsor package for tier "${tier}" from Contentful:`, error);
+    return null;
+  }
+}
+
+// ============================================
+// Page Section Functions
+// ============================================
+
+/**
+ * Get all page sections for a specific page
+ */
+export async function getPageSections(page: string, preview = false): Promise<PageSectionEntry[]> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn(`Contentful client not configured - returning empty page sections array for page: ${page}`);
+    return [];
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'pageSection',
+      'fields.page': page,
+    }) as { items: PageSectionEntry[] };
+
+    return entries.items;
+  } catch (error) {
+    console.warn(`Failed to fetch page sections for page "${page}" from Contentful:`, error);
+    return [];
+  }
+}
+
+/**
+ * Get a specific page section by key
+ */
+export async function getPageSection(key: string, preview = false): Promise<PageSectionEntry | null> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn(`Contentful client not configured - returning null for page section: ${key}`);
+    return null;
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'pageSection',
+      'fields.key': key,
+      limit: 1,
+    }) as { items: PageSectionEntry[] };
+
+    return entries.items[0] || null;
+  } catch (error) {
+    console.warn(`Failed to fetch page section "${key}" from Contentful:`, error);
+    return null;
   }
 }

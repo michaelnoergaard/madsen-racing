@@ -132,6 +132,68 @@ const contentModels = [
         type: 'Text',
         required: false
       },
+      {
+        id: 'primaryButton',
+        name: 'Primary CTA Button',
+        type: 'Object',
+        required: false,
+        fields: [
+          {
+            id: 'text',
+            name: 'Button Text',
+            type: 'Symbol',
+            required: true
+          },
+          {
+            id: 'url',
+            name: 'Button URL',
+            type: 'Symbol',
+            required: true,
+            validations: [{
+              regexp: {
+                pattern: '^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$'
+              }
+            }]
+          },
+          {
+            id: 'openInNewTab',
+            name: 'Open in New Tab',
+            type: 'Boolean',
+            required: false
+          }
+        ]
+      },
+      {
+        id: 'secondaryButton',
+        name: 'Secondary CTA Button',
+        type: 'Object',
+        required: false,
+        fields: [
+          {
+            id: 'text',
+            name: 'Button Text',
+            type: 'Symbol',
+            required: true
+          },
+          {
+            id: 'url',
+            name: 'Button URL',
+            type: 'Symbol',
+            required: true,
+            validations: [{
+              regexp: {
+                pattern: '^(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)$'
+              }
+            }]
+          },
+          {
+            id: 'openInNewTab',
+            name: 'Open in New Tab',
+            type: 'Boolean',
+            required: false
+          }
+        ]
+      },
       { id: 'content', name: 'Content', type: 'RichText', required: true },
       {
         id: 'seoDescription',
@@ -163,38 +225,160 @@ const contentModels = [
       { id: 'points', name: 'Points', type: 'Integer', required: false },
     ],
   },
+  {
+    id: 'sponsorPackage',
+    name: 'Sponsor Package',
+    description: 'Sponsor packages with pricing and features',
+    displayField: 'name',
+    fields: [
+      {
+        id: 'name',
+        name: 'Pakke Navn',
+        type: 'Symbol',
+        required: true,
+        validations: [{ unique: true }]
+      },
+      {
+        id: 'tier',
+        name: 'Tier',
+        type: 'Symbol',
+        required: true,
+        validations: [{
+          in: ['bronze', 'silver', 'gold']
+        }]
+      },
+      {
+        id: 'price',
+        name: 'Pris (kr)',
+        type: 'Integer',
+        required: true
+      },
+      {
+        id: 'priceLabel',
+        name: 'Pris Label',
+        type: 'Symbol',
+        required: false
+      },
+      {
+        id: 'features',
+        name: 'Features',
+        type: 'Array',
+        items: {
+          type: 'Symbol'
+        },
+        required: true
+      },
+      {
+        id: 'displayOrder',
+        name: 'Display Order',
+        type: 'Integer',
+        required: true
+      },
+      {
+        id: 'active',
+        name: 'Active',
+        type: 'Boolean',
+        required: true
+      }
+    ],
+  },
+  {
+    id: 'pageSection',
+    name: 'Page Section',
+    description: 'Reusable page section headings and descriptions',
+    displayField: 'key',
+    fields: [
+      {
+        id: 'key',
+        name: 'Section Key',
+        type: 'Symbol',
+        required: true,
+        validations: [
+          { unique: true },
+          {
+            regexp: {
+              pattern: '^[a-z0-9-_]+$',
+              flags: null
+            }
+          }
+        ]
+      },
+      {
+        id: 'page',
+        name: 'Page',
+        type: 'Symbol',
+        required: true,
+        validations: [{
+          in: ['forside', 'om-anton', 'kalender', 'resultater', 'galleri', 'sponsorer', 'global']
+        }]
+      },
+      {
+        id: 'heading',
+        name: 'Overskrift',
+        type: 'Symbol',
+        required: false
+      },
+      {
+        id: 'description',
+        name: 'Beskrivelse',
+        type: 'Text',
+        required: false
+      },
+      {
+        id: 'buttonText',
+        name: 'Knap Tekst',
+        type: 'Symbol',
+        required: false
+      },
+      {
+        id: 'buttonUrl',
+        name: 'Knap URL',
+        type: 'Symbol',
+        required: false
+      }
+    ],
+  },
 ];
 
 async function createContentModel(environment, model) {
   try {
     console.log(`📝 Creating content model: ${model.name}...`);
 
-    const contentType = await environment.createContentTypeWithId(model.id, {
-      name: model.name,
-      description: model.description,
-      displayField: model.displayField,
-      fields: model.fields.map(field => ({
-        id: field.id,
-        name: field.name,
-        type: field.type,
-        linkType: field.linkType,
-        required: field.required || false,
-        localized: false,
-        validations: field.validations || [],
-      })),
-    });
+    // First, try to get the content type to see if it exists
+    let contentType;
+    try {
+      contentType = await environment.getContentType(model.id);
+      console.log(`✅ Already exists: ${model.name}`);
+      return contentType;
+    } catch (getError) {
+      // Content type doesn't exist, so create it
+      if (getError.status === 404) {
+        contentType = await environment.createContentTypeWithId(model.id, {
+          name: model.name,
+          description: model.description,
+          displayField: model.displayField,
+          fields: model.fields.map(field => ({
+            id: field.id,
+            name: field.name,
+            type: field.type,
+            linkType: field.linkType,
+            items: field.items,
+            required: field.required || false,
+            localized: false,
+            validations: field.validations || [],
+          })),
+        });
 
-    await contentType.publish();
-    console.log(`✅ Created and published: ${model.name}`);
-
-    return contentType;
-  } catch (error) {
-    if (error.message.includes('already exists')) {
-      console.log(`⚠️  Already exists: ${model.name}`);
-    } else {
-      console.error(`❌ Error creating ${model.name}:`, error.message);
-      throw error;
+        await contentType.publish();
+        console.log(`✅ Created and published: ${model.name}`);
+        return contentType;
+      } else {
+        throw getError;
+      }
     }
+  } catch (error) {
+    console.error(`❌ Error creating ${model.name}:`, error.message || error);
+    throw error;
   }
 }
 

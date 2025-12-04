@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SponsorLogo from '../components/SponsorLogo.astro';
-import { getSponsorsByTier, getImageUrl } from '../lib/contentful';
+import { getSponsorsByTier, getImageUrl, getSponsorPackages, getPageSections } from '../lib/contentful';
 
 interface Sponsor {
   name: string;
@@ -9,6 +9,15 @@ interface Sponsor {
   logo?: string;
   website?: string;
   description?: string;
+}
+
+interface SponsorPackage {
+  name: string;
+  tier: string;
+  price: string;
+  color: string;
+  popular: boolean;
+  features: string[];
 }
 
 // Get sponsors from Contentful
@@ -58,43 +67,149 @@ try {
   // Fallback to empty sponsors
 }
 
-const packages = [
-  {
-    name: 'BRONZE',
-    price: '5.000 kr',
-    color: 'border-amber-700',
-    features: [
-      'Logo på website',
-      'Omtale på social media (1x)',
-      'Tak i nyhedsbreve',
-    ]
-  },
-  {
-    name: 'SØLV',
-    price: '7.500 kr',
-    color: 'border-mr-gray-400',
-    popular: false,
-    features: [
-      'Alt fra Bronze',
-      'Logo på kørerdragt',
-      'Omtale på social media (3x)',
-      'Billeder til egen markedsføring',
-    ]
-  },
-  {
-    name: 'GULD',
-    price: '10.000+ kr',
-    color: 'border-mr-yellow',
-    popular: true,
-    features: [
-      'Alt fra Sølv',
-      'Prominent logo på kart',
-      'VIP-adgang til udvalgte løb',
-      'Månedlig social media eksponering',
-      'Skræddersyet partnerskab',
-    ]
-  },
-];
+// Get sponsor packages from Contentful
+let packages: SponsorPackage[] = [];
+
+try {
+  const packageEntries = await getSponsorPackages();
+
+  // Helper function to get field value with Danish locale fallback
+  const getFieldValue = (field: any): any => {
+    if (!field) return undefined;
+    if (typeof field === 'object' && !Array.isArray(field)) {
+      return field['da-DK'] || field['en-US'] || field;
+    }
+    return field;
+  };
+
+  packages = packageEntries.map((pkg: any) => {
+    const tier = getFieldValue(pkg.fields.tier);
+    const name = getFieldValue(pkg.fields.name);
+    const price = getFieldValue(pkg.fields.price);
+    const priceLabel = getFieldValue(pkg.fields.priceLabel);
+    const features = getFieldValue(pkg.fields.features) || [];
+
+    // Map tier to border color
+    const colorMap: Record<string, string> = {
+      'bronze': 'border-amber-700',
+      'silver': 'border-mr-gray-400',
+      'gold': 'border-mr-yellow',
+    };
+
+    // Format price display
+    const priceDisplay = priceLabel || `${price.toLocaleString('da-DK')} kr`;
+
+    return {
+      name: name.toUpperCase(),
+      tier,
+      price: priceDisplay,
+      color: colorMap[tier] || 'border-mr-gray-400',
+      popular: tier === 'gold', // Gold is always popular
+      features,
+    };
+  });
+} catch (error) {
+  console.error('Error fetching sponsor packages:', error);
+  // Fallback to hardcoded packages if Contentful fails
+  packages = [
+    {
+      name: 'BRONZE',
+      tier: 'bronze',
+      price: '5.000 kr',
+      color: 'border-amber-700',
+      popular: false,
+      features: [
+        'Logo på website',
+        'Omtale på social media (1x)',
+        'Tak i nyhedsbreve',
+      ]
+    },
+    {
+      name: 'SØLV',
+      tier: 'silver',
+      price: '7.500 kr',
+      color: 'border-mr-gray-400',
+      popular: false,
+      features: [
+        'Alt fra Bronze',
+        'Logo på kørerdragt',
+        'Omtale på social media (3x)',
+        'Billeder til egen markedsføring',
+      ]
+    },
+    {
+      name: 'GULD',
+      tier: 'gold',
+      price: '10.000+ kr',
+      color: 'border-mr-yellow',
+      popular: true,
+      features: [
+        'Alt fra Sølv',
+        'Prominent logo på kart',
+        'VIP-adgang til udvalgte løb',
+        'Månedlig social media eksponering',
+        'Skræddersyet partnerskab',
+      ]
+    },
+  ];
+}
+
+// Get page sections from Contentful
+let sections: Record<string, { heading: string; description: string }> = {};
+
+try {
+  const sectionEntries = await getPageSections('sponsorer');
+
+  // Helper function to get field value with Danish locale fallback
+  const getFieldValue = (field: any): any => {
+    if (!field) return '';
+    if (typeof field === 'object' && !Array.isArray(field)) {
+      return field['da-DK'] || field['en-US'] || field;
+    }
+    return field;
+  };
+
+  sectionEntries.forEach((section: any) => {
+    const key = getFieldValue(section.fields.key);
+    sections[key] = {
+      heading: getFieldValue(section.fields.heading) || '',
+      description: getFieldValue(section.fields.description) || '',
+    };
+  });
+} catch (error) {
+  console.error('Error fetching page sections:', error);
+  // Fallback to hardcoded sections
+  sections = {
+    'sponsorer-hero': {
+      heading: 'VORES PARTNERE',
+      description: 'Tak til alle der støtter Madsen Racing. Sammen gør vi drømmen om professionel motorsport mulig.',
+    },
+    'sponsorer-packages': {
+      heading: 'BLIV SPONSOR',
+      description: 'Støt en ung dansk racertalent og få eksponering for din virksomhed. Vælg den pakke der passer til dit budget.',
+    },
+    'sponsorer-kontakt': {
+      heading: 'KONTAKT OS',
+      description: '',
+    },
+  };
+}
+
+// Extract section content with fallbacks
+const heroSection = sections['sponsorer-hero'] || {
+  heading: 'VORES PARTNERE',
+  description: 'Tak til alle der støtter Madsen Racing. Sammen gør vi drømmen om professionel motorsport mulig.',
+};
+
+const packagesSection = sections['sponsorer-packages'] || {
+  heading: 'BLIV SPONSOR',
+  description: 'Støt en ung dansk racertalent og få eksponering for din virksomhed. Vælg den pakke der passer til dit budget.',
+};
+
+const kontaktSection = sections['sponsorer-kontakt'] || {
+  heading: 'KONTAKT OS',
+  description: '',
+};
 ---
 
 <Layout 
@@ -104,11 +219,10 @@ const packages = [
   <!-- Hero -->
   <section class="pt-32 pb-16 bg-mr-gradient-dark">
     <div class="max-w-6xl mx-auto px-4 text-center">
-      <h1 class="text-4xl md:text-5xl font-black mb-4 font-display">
-        VORES <span class="text-mr-yellow">PARTNERE</span>
+      <h1 class="text-4xl md:text-5xl font-black mb-4 font-display" set:html={heroSection.heading.replace(/PARTNERE/g, '<span class="text-mr-yellow">PARTNERE</span>')}>
       </h1>
       <p class="text-mr-gray-400 max-w-2xl mx-auto">
-        Tak til alle der støtter Madsen Racing. Sammen gør vi drømmen om professionel motorsport mulig.
+        {heroSection.description}
       </p>
     </div>
   </section>
@@ -158,10 +272,9 @@ const packages = [
   <section class="section bg-mr-gray-900/50">
     <div class="max-w-6xl mx-auto px-4">
       <div class="text-center mb-12">
-        <h2 class="section-title">BLIV <span class="text-mr-yellow">SPONSOR</span></h2>
+        <h2 class="section-title" set:html={packagesSection.heading.replace(/SPONSOR/g, '<span class="text-mr-yellow">SPONSOR</span>')}></h2>
         <p class="section-subtitle max-w-2xl mx-auto">
-          Støt en ung dansk racertalent og få eksponering for din virksomhed. 
-          Vælg den pakke der passer til dit budget.
+          {packagesSection.description}
         </p>
       </div>
 
@@ -214,7 +327,7 @@ const packages = [
   <!-- Contact Form -->
   <section id="kontakt" class="section bg-mr-black">
     <div class="max-w-2xl mx-auto px-4">
-      <h2 class="section-title text-center mb-8">KONTAKT <span class="text-mr-yellow">OS</span></h2>
+      <h2 class="section-title text-center mb-8" set:html={kontaktSection.heading.replace(/OS/g, '<span class="text-mr-yellow">OS</span>')}></h2>
       
       <form class="space-y-6">
         <div class="grid md:grid-cols-2 gap-6">

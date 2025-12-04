@@ -46,7 +46,22 @@
       "Bash(npx astro check:*)",
       "Bash(cat:*)",
       "Bash(npm uninstall:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run setup:contentful:*)",
+      "Bash(npm run setup:forside:*)",
+      "Bash(npm run update:pagecontent:*)",
+      "Bash(npm run check:pagecontent:*)",
+      "Bash(npm run check:published:*)",
+      "Bash(npm run update:pagecontent-buttons:*)",
+      "Bash(gh secret set:*)",
+      "Bash(gh secret list:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm outdated:*)",
+      "Bash(wc:*)",
+      "Bash(ssh:*)",
+      "Bash(ssh-keygen:*)",
+      "Bash(ls:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
