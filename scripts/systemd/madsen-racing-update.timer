@@ -1,0 +1,16 @@
+[Unit]
+Description=Check for Madsen Racing website updates
+Requires=madsen-racing-update.service
+
+[Timer]
+# Check for updates every 15 minutes
+OnBootSec=5min
+OnUnitActiveSec=15min
+
+# Alternative schedules (uncomment the one you prefer):
+# Every hour: OnCalendar=hourly
+# Twice per day (8am and 8pm): OnCalendar=08,20:00
+# Once per day at 3am: OnCalendar=03:00
+
+[Install]
+WantedBy=timers.target
