@@ -61,7 +61,16 @@
       "Bash(ssh:*)",
       "Bash(ssh-keygen:*)",
       "Bash(ls:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(grep:*)",
+      "Bash(xargs:*)",
+      "Bash(sort:*)",
+      "Bash(time npm run build:*)",
+      "Bash(git fetch:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git merge:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []

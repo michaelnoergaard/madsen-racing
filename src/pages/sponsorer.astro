@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SponsorLogo from '../components/SponsorLogo.astro';
-import { getSponsorsByTier, getImageUrl, getSponsorPackages, getPageSections } from '../lib/contentful';
+import { getSponsorsByTier, getImageUrl, getSponsorPackages, getPageSection } from '../lib/contentful';
 
 interface Sponsor {
   name: string;
@@ -19,6 +19,47 @@ interface SponsorPackage {
   popular: boolean;
   features: string[];
 }
+
+// Helper function to get field value with Danish locale fallback
+const getField = (field: any): string => {
+  if (!field) return '';
+  if (typeof field === 'object' && !Array.isArray(field)) {
+    return field['da-DK'] || field['en-US'] || field;
+  }
+  return field;
+};
+
+// Get page sections from Contentful
+let sections: Record<string, { heading: string; description: string; buttonText?: string; buttonUrl?: string }> = {};
+
+try {
+  const sectionEntries = await getPageSections('sponsorer');
+
+  sectionEntries.forEach((section: any) => {
+    const key = getField(section.fields.key);
+    sections[key] = {
+      heading: getField(section.fields.heading) || '',
+      description: getField(section.fields.description) || '',
+      buttonText: getField(section.fields.buttonText) || undefined,
+      buttonUrl: getField(section.fields.buttonUrl) || undefined,
+    };
+  });
+} catch (error) {
+  console.error('Error fetching page sections:', error);
+}
+
+// Get tier heading sections
+const tierGuldSection = { heading: getField(sections['sponsorer-tier-guld']?.heading) || 'GULD PARTNERE' };
+const tierSølvSection = { heading: getField(sections['sponsorer-tier-sølv']?.heading) || 'SØLV PARTNERE' };
+const tierBronzeSection = { heading: getField(sections['sponsorer-tier-bronze']?.heading) || 'BRONZE PARTNERE' };
+
+// Get form and button sections
+const popularBadgeSection = { heading: getField(sections['sponsorer-popular-badge']?.heading) || 'POPULÆR' };
+const priceLabelSection = { description: getField(sections['sponsorer-price-label']?.description) || 'pr. sæson' };
+const contactButtonSection = { buttonText: getField(sections['sponsorer-contact-button']?.buttonText) || 'KONTAKT OS', buttonUrl: getField(sections['sponsorer-contact-button']?.buttonUrl) || '#kontakt' };
+const submitButtonSection = { buttonText: getField(sections['sponsorer-submit-button']?.buttonText) || 'SEND BESKED' };
+const contactEmailSection = { description: getField(sections['sponsorer-contact-email']?.description) || 'Eller kontakt os direkte:', buttonText: getField(sections['sponsorer-contact-email']?.buttonText) || 'kontakt@madsenracing.dk', buttonUrl: getField(sections['sponsorer-contact-email']?.buttonUrl) || 'mailto:kontakt@madsenracing.dk' };
+const customPackageSection = { description: getField(sections['sponsorer-custom-package-text']?.description) || 'Ønsker du en skræddersyet pakke? Kontakt os for at høre mere.', buttonText: getField(sections['sponsorer-custom-package-text']?.buttonText) || 'Kontakt os', buttonUrl: getField(sections['sponsorer-custom-package-text']?.buttonUrl) || '#kontakt' };
 
 // Get sponsors from Contentful
 let sponsors: {
@@ -73,21 +114,12 @@ let packages: SponsorPackage[] = [];
 try {
   const packageEntries = await getSponsorPackages();
 
-  // Helper function to get field value with Danish locale fallback
-  const getFieldValue = (field: any): any => {
-    if (!field) return undefined;
-    if (typeof field === 'object' && !Array.isArray(field)) {
-      return field['da-DK'] || field['en-US'] || field;
-    }
-    return field;
-  };
-
   packages = packageEntries.map((pkg: any) => {
-    const tier = getFieldValue(pkg.fields.tier);
-    const name = getFieldValue(pkg.fields.name);
-    const price = getFieldValue(pkg.fields.price);
-    const priceLabel = getFieldValue(pkg.fields.priceLabel);
-    const features = getFieldValue(pkg.fields.features) || [];
+    const tier = getField(pkg.fields.tier);
+    const name = getField(pkg.fields.name);
+    const price = getField(pkg.fields.price);
+    const priceLabel = getField(pkg.fields.priceLabel);
+    const features = getField(pkg.fields.features) || [];
 
     // Map tier to border color
     const colorMap: Record<string, string> = {
@@ -154,47 +186,6 @@ try {
   ];
 }
 
-// Get page sections from Contentful
-let sections: Record<string, { heading: string; description: string }> = {};
-
-try {
-  const sectionEntries = await getPageSections('sponsorer');
-
-  // Helper function to get field value with Danish locale fallback
-  const getFieldValue = (field: any): any => {
-    if (!field) return '';
-    if (typeof field === 'object' && !Array.isArray(field)) {
-      return field['da-DK'] || field['en-US'] || field;
-    }
-    return field;
-  };
-
-  sectionEntries.forEach((section: any) => {
-    const key = getFieldValue(section.fields.key);
-    sections[key] = {
-      heading: getFieldValue(section.fields.heading) || '',
-      description: getFieldValue(section.fields.description) || '',
-    };
-  });
-} catch (error) {
-  console.error('Error fetching page sections:', error);
-  // Fallback to hardcoded sections
-  sections = {
-    'sponsorer-hero': {
-      heading: 'VORES PARTNERE',
-      description: 'Tak til alle der støtter Madsen Racing. Sammen gør vi drømmen om professionel motorsport mulig.',
-    },
-    'sponsorer-packages': {
-      heading: 'BLIV SPONSOR',
-      description: 'Støt en ung dansk racertalent og få eksponering for din virksomhed. Vælg den pakke der passer til dit budget.',
-    },
-    'sponsorer-kontakt': {
-      heading: 'KONTAKT OS',
-      description: '',
-    },
-  };
-}
-
 // Extract section content with fallbacks
 const heroSection = sections['sponsorer-hero'] || {
   heading: 'VORES PARTNERE',
@@ -212,8 +203,8 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
 };
 ---
 
-<Layout 
-  title="Sponsorer" 
+<Layout
+  title="Sponsorer"
   description="Bliv sponsor for Anton Madsen og Madsen Racing. Se sponsorpakker og fordele ved at støtte en kommende racerstjerne."
 >
   <!-- Hero -->
@@ -233,7 +224,7 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
       <!-- Gold -->
       {sponsors.guld.length > 0 && (
         <div class="mb-12">
-          <h3 class="text-lg font-bold text-mr-yellow mb-6 text-center">GULD PARTNERE</h3>
+          <h3 class="text-lg font-bold text-mr-yellow mb-6 text-center">{tierGuldSection.heading}</h3>
           <div class="flex flex-wrap justify-center gap-6">
             {sponsors.guld.map(s => (
               <SponsorLogo name={s.name} tier={s.tier} />
@@ -241,11 +232,11 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
           </div>
         </div>
       )}
-      
+
       <!-- Silver -->
       {sponsors.sølv.length > 0 && (
         <div class="mb-12">
-          <h3 class="text-lg font-bold text-mr-gray-400 mb-6 text-center">SØLV PARTNERE</h3>
+          <h3 class="text-lg font-bold text-mr-gray-400 mb-6 text-center">{tierSølvSection.heading}</h3>
           <div class="flex flex-wrap justify-center gap-6">
             {sponsors.sølv.map(s => (
               <SponsorLogo name={s.name} tier={s.tier} />
@@ -253,11 +244,11 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
           </div>
         </div>
       )}
-      
+
       <!-- Bronze -->
       {sponsors.bronze.length > 0 && (
         <div>
-          <h3 class="text-lg font-bold text-amber-700 mb-6 text-center">BRONZE PARTNERE</h3>
+          <h3 class="text-lg font-bold text-amber-700 mb-6 text-center">{tierBronzeSection.heading}</h3>
           <div class="flex flex-wrap justify-center gap-6">
             {sponsors.bronze.map(s => (
               <SponsorLogo name={s.name} tier={s.tier} />
@@ -287,16 +278,16 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
           ]}>
             {pkg.popular && (
               <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-mr-yellow text-mr-black text-xs font-bold rounded-full">
-                POPULÆR
+                {popularBadgeSection.heading}
               </div>
             )}
-            
+
             <div class="text-center mb-6">
               <h3 class="text-xl font-black mb-2">{pkg.name}</h3>
               <div class="text-3xl font-black text-mr-yellow">{pkg.price}</div>
-              <p class="text-mr-gray-500 text-sm">pr. sæson</p>
+              <p class="text-mr-gray-500 text-sm">{priceLabelSection.description}</p>
             </div>
-            
+
             <ul class="space-y-3 mb-6">
               {pkg.features.map(feature => (
                 <li class="flex items-start gap-2 text-sm">
@@ -307,19 +298,19 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
                 </li>
               ))}
             </ul>
-            
-            <a href="#kontakt" class:list={[
+
+            <a href={contactButtonSection.buttonUrl} class:list={[
               'block text-center py-3 rounded-lg font-bold transition-all',
               pkg.popular ? 'bg-mr-yellow text-mr-black hover:bg-mr-yellow/90' : 'bg-mr-gray-700 hover:bg-mr-gray-600'
             ]}>
-              KONTAKT OS
+              {contactButtonSection.buttonText}
             </a>
           </div>
         ))}
       </div>
 
       <p class="text-center text-mr-gray-400">
-        Ønsker du en skræddersyet pakke? <a href="#kontakt" class="text-mr-yellow hover:underline">Kontakt os</a> for at høre mere.
+        {customPackageSection.description} <a href={customPackageSection.buttonUrl} class="text-mr-yellow hover:underline">{customPackageSection.buttonText}</a>.
       </p>
     </div>
   </section>
@@ -328,13 +319,13 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
   <section id="kontakt" class="section bg-mr-black">
     <div class="max-w-2xl mx-auto px-4">
       <h2 class="section-title text-center mb-8" set:html={kontaktSection.heading.replace(/OS/g, '<span class="text-mr-yellow">OS</span>')}></h2>
-      
+
       <form class="space-y-6">
         <div class="grid md:grid-cols-2 gap-6">
           <div>
             <label class="block text-sm text-mr-gray-400 mb-2">Navn *</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               required
               class="w-full px-4 py-3 bg-mr-gray-900 border border-mr-gray-700 rounded-lg focus:border-mr-yellow focus:outline-none transition-colors"
               placeholder="Dit navn"
@@ -342,43 +333,43 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
           </div>
           <div>
             <label class="block text-sm text-mr-gray-400 mb-2">Virksomhed</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               class="w-full px-4 py-3 bg-mr-gray-900 border border-mr-gray-700 rounded-lg focus:border-mr-yellow focus:outline-none transition-colors"
               placeholder="Virksomhedsnavn"
             />
           </div>
         </div>
-        
+
         <div>
           <label class="block text-sm text-mr-gray-400 mb-2">Email *</label>
-          <input 
-            type="email" 
+          <input
+            type="email"
             required
             class="w-full px-4 py-3 bg-mr-gray-900 border border-mr-gray-700 rounded-lg focus:border-mr-yellow focus:outline-none transition-colors"
             placeholder="din@email.dk"
           />
         </div>
-        
+
         <div>
           <label class="block text-sm text-mr-gray-400 mb-2">Besked *</label>
-          <textarea 
+          <textarea
             required
             rows="5"
             class="w-full px-4 py-3 bg-mr-gray-900 border border-mr-gray-700 rounded-lg focus:border-mr-yellow focus:outline-none transition-colors resize-none"
             placeholder="Fortæl os om din interesse i sponsorat..."
           ></textarea>
         </div>
-        
+
         <button type="submit" class="btn-primary w-full">
-          SEND BESKED
+          {submitButtonSection.buttonText}
         </button>
       </form>
-      
+
       <div class="mt-8 text-center text-mr-gray-500 text-sm">
-        <p>Eller kontakt os direkte:</p>
-        <a href="mailto:kontakt@madsenracing.dk" class="text-mr-yellow hover:underline">
-          kontakt@madsenracing.dk
+        <p>{contactEmailSection.description}</p>
+        <a href={contactEmailSection.buttonUrl} class="text-mr-yellow hover:underline">
+          {contactEmailSection.buttonText}
         </a>
       </div>
     </div>

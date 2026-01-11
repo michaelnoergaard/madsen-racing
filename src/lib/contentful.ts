@@ -156,6 +156,35 @@ export interface PageSectionFields {
   buttonUrl?: EntryFieldTypes.Text;
 }
 
+export interface SiteConfigFields {
+  siteName: EntryFieldTypes.Text;
+  tagline: EntryFieldTypes.Text;
+  contactEmail: EntryFieldTypes.Text;
+  managerName?: EntryFieldTypes.Text;
+  currentSeason: EntryFieldTypes.Text;
+  previousSeason: EntryFieldTypes.Text;
+  socialInstagram: EntryFieldTypes.Text;
+  socialFacebook: EntryFieldTypes.Text;
+  navigationItems: EntryFieldTypes.Array<EntryFieldTypes.Symbol>;
+  footerText?: EntryFieldTypes.Text;
+}
+
+export interface DriverProfileFields {
+  name: EntryFieldTypes.Text;
+  age: EntryFieldTypes.Integer;
+  city: EntryFieldTypes.Text;
+  team: EntryFieldTypes.Text;
+  class: EntryFieldTypes.Text;
+  kartBrand: EntryFieldTypes.Text;
+  number: EntryFieldTypes.Integer;
+  startYear: EntryFieldTypes.Integer;
+  dreamQuote: EntryFieldTypes.Text;
+  dreamDescription: EntryFieldTypes.Text;
+  bioHeadline?: EntryFieldTypes.Text;
+  bioSubtitle?: EntryFieldTypes.Text;
+  portraitImage?: EntryFieldTypes.AssetLink;
+}
+
 // Type aliases for entries
 export type RaceEntry = Entry<RaceFields, undefined, string>;
 export type SponsorEntry = Entry<SponsorFields, undefined, string>;
@@ -167,6 +196,8 @@ export type VideoEntry = Entry<VideoFields, undefined, string>;
 export type PressPhotoEntry = Entry<PressPhotoFields, undefined, string>;
 export type SponsorPackageEntry = Entry<SponsorPackageFields, undefined, string>;
 export type PageSectionEntry = Entry<PageSectionFields, undefined, string>;
+export type SiteConfigEntry = Entry<SiteConfigFields, undefined, string>;
+export type DriverProfileEntry = Entry<DriverProfileFields, undefined, string>;
 
 // ============================================
 // Data Fetching Functions
@@ -760,6 +791,58 @@ export async function getPageSection(key: string, preview = false): Promise<Page
     return entries.items[0] || null;
   } catch (error) {
     console.warn(`Failed to fetch page section "${key}" from Contentful:`, error);
+    return null;
+  }
+}
+
+// ============================================
+// Site Config Functions
+// ============================================
+
+/**
+ * Get site configuration (singleton entry)
+ */
+export async function getSiteConfig(preview = false): Promise<SiteConfigEntry | null> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning null for site config');
+    return null;
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'siteConfig',
+      limit: 1,
+    }) as { items: SiteConfigEntry[] };
+
+    return entries.items[0] || null;
+  } catch (error) {
+    console.warn('Failed to fetch site config from Contentful:', error);
+    return null;
+  }
+}
+
+/**
+ * Get driver profile (singleton entry)
+ */
+export async function getDriverProfile(preview = false): Promise<DriverProfileEntry | null> {
+  const client = getClient(preview);
+
+  if (!client) {
+    console.warn('Contentful client not configured - returning null for driver profile');
+    return null;
+  }
+
+  try {
+    const entries = await client.getEntries({
+      content_type: 'driverProfile',
+      limit: 1,
+    }) as { items: DriverProfileEntry[] };
+
+    return entries.items[0] || null;
+  } catch (error) {
+    console.warn('Failed to fetch driver profile from Contentful:', error);
     return null;
   }
 }

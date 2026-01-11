@@ -1,7 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import RaceCard from '../components/RaceCard.astro';
-import { getRaces, formatDate } from '../lib/contentful';
+import { getRaces, formatDate, getPageSection } from '../lib/contentful';
+
+// Get page sections from Contentful
+const springSection = await getPageSection('kalender-spring') || { fields: { heading: 'FORÅR', description: '' } };
+const summerSection = await getPageSection('kalender-summer') || { fields: { heading: 'SOMMER', description: '' } };
+const autumnSection = await getPageSection('kalender-autumn') || { fields: { heading: 'EFTERÅR', description: '' } };
+const ctaSection = await getPageSection('kalender-cta-heading') || { fields: { heading: 'Følg med live på løbsdagene!', description: 'Vi deler opdateringer, live stories og resultater på Instagram og Facebook.' } };
+
+// Helper function to get field value with fallback
+const getField = (field: any): string => {
+  if (!field) return '';
+  if (typeof field === 'object' && !Array.isArray(field)) {
+    return field['da-DK'] || field['en-US'] || field;
+  }
+  return field;
+};
 
 // Get 2026 races from Contentful
 let allRaces = [];
@@ -51,10 +66,14 @@ const groupRacesBySeason = (races) => {
 };
 
 const races2026 = groupRacesBySeason(allRaces);
+
+// Get CTA button info from PageSection
+const ctaButtonText = getField(ctaSection.fields.buttonText) || 'Instagram';
+const ctaButtonUrl = getField(ctaSection.fields.buttonUrl) || 'https://instagram.com/madsenracing22';
 ---
 
-<Layout 
-  title="Kalender 2026" 
+<Layout
+  title="Kalender 2026"
   description="Se Anton Madsens løbskalender for 2026 sæsonen - DKM, Nordic Championship og internationale løb."
 >
   <!-- Hero -->
@@ -74,7 +93,7 @@ const races2026 = groupRacesBySeason(allRaces);
     <div class="max-w-4xl mx-auto px-4">
       <h2 class="text-2xl font-black mb-6 flex items-center gap-3">
         <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-        FORÅR
+        {getField(springSection.fields.heading)}
       </h2>
       <div class="space-y-4">
         {races2026.forår.map(race => (
@@ -89,7 +108,7 @@ const races2026 = groupRacesBySeason(allRaces);
     <div class="max-w-4xl mx-auto px-4">
       <h2 class="text-2xl font-black mb-6 flex items-center gap-3">
         <span class="w-3 h-3 bg-mr-yellow rounded-full"></span>
-        SOMMER
+        {getField(summerSection.fields.heading)}
       </h2>
       <div class="space-y-4">
         {races2026.sommer.map(race => (
@@ -104,7 +123,7 @@ const races2026 = groupRacesBySeason(allRaces);
     <div class="max-w-4xl mx-auto px-4">
       <h2 class="text-2xl font-black mb-6 flex items-center gap-3">
         <span class="w-3 h-3 bg-orange-500 rounded-full"></span>
-        EFTERÅR
+        {getField(autumnSection.fields.heading)}
       </h2>
       <div class="space-y-4">
         {races2026.efterår.map(race => (
@@ -117,13 +136,13 @@ const races2026 = groupRacesBySeason(allRaces);
   <!-- CTA -->
   <section class="py-12 bg-mr-purple/20 border-y border-mr-purple/30">
     <div class="max-w-4xl mx-auto px-4 text-center">
-      <h3 class="text-xl font-bold mb-4">Følg med live på løbsdagene!</h3>
+      <h3 class="text-xl font-bold mb-4">{getField(ctaSection.fields.heading)}</h3>
       <p class="text-mr-gray-400 mb-6">
-        Vi deler opdateringer, live stories og resultater på Instagram og Facebook.
+        {getField(ctaSection.fields.description)}
       </p>
       <div class="flex justify-center gap-4">
-        <a href="https://instagram.com/madsenracing22" target="_blank" rel="noopener noreferrer" class="btn-primary">
-          Instagram
+        <a href={ctaButtonUrl} target="_blank" rel="noopener noreferrer" class="btn-primary">
+          {ctaButtonText}
         </a>
         <a href="https://facebook.com/madsenracing" target="_blank" rel="noopener noreferrer" class="btn-secondary">
           Facebook

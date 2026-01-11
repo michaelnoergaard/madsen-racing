@@ -2,7 +2,22 @@
 import Layout from '../layouts/Layout.astro';
 import StatCard from '../components/StatCard.astro';
 import RaceCard from '../components/RaceCard.astro';
-import { getDriverStats, getResults, formatDate } from '../lib/contentful';
+import { getDriverStats, getResults, formatDate, getPageSection } from '../lib/contentful';
+
+// Get page sections from Contentful
+const seasonLabelSection = await getPageSection('resultater-season-label') || { fields: { heading: 'SÆSON 2025', description: '' } };
+const highlightsSection = await getPageSection('resultater-highlights') || { fields: { heading: 'HØJDEPUNKTER', description: '' } };
+const resultsListSection = await getPageSection('resultater-list-heading') || { fields: { heading: 'ALLE RESULTATER 2025', description: '' } };
+const resultsFooterSection = await getPageSection('resultater-list-footer') || { fields: { heading: '', description: 'Viser seneste 6 løb. Fuld historik kommer snart.' } };
+
+// Helper function to get field value with fallback
+const getField = (field: any): string => {
+  if (!field) return '';
+  if (typeof field === 'object' && !Array.isArray(field)) {
+    return field['da-DK'] || field['en-US'] || field;
+  }
+  return field;
+};
 
 // Get 2025 driver stats and results from Contentful
 let stats2025 = [];
@@ -61,8 +76,8 @@ if (stats2025.length > 0) {
 }
 ---
 
-<Layout 
-  title="Resultater" 
+<Layout
+  title="Resultater"
   description="Se Anton Madsens karriereresultater, statistik og højdepunkter fra karting-sæsonen."
 >
   <!-- Hero -->
@@ -80,8 +95,10 @@ if (stats2025.length > 0) {
   <!-- Stats 2025 -->
   <section class="section bg-mr-black">
     <div class="max-w-6xl mx-auto px-4">
-      <h2 class="section-title text-center mb-12">SÆSON <span class="text-mr-yellow">2025</span></h2>
-      
+      <h2 class="section-title text-center mb-12">
+        {getField(seasonLabelSection.fields.heading)}
+      </h2>
+
       <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
         {stats2025.map(stat => (
           <StatCard value={stat.value} label={stat.label} />
@@ -93,8 +110,10 @@ if (stats2025.length > 0) {
   <!-- Highlights -->
   <section class="section bg-mr-gray-900/50">
     <div class="max-w-4xl mx-auto px-4">
-      <h2 class="text-2xl font-black mb-8 text-center">HØJDEPUNKTER</h2>
-      
+      <h2 class="text-2xl font-black mb-8 text-center">
+        {getField(highlightsSection.fields.heading)}
+      </h2>
+
       <div class="grid md:grid-cols-3 gap-6">
         {highlights.map((item, i) => (
           <div class="card-highlight text-center">
@@ -110,16 +129,18 @@ if (stats2025.length > 0) {
   <!-- Results List -->
   <section class="section bg-mr-black">
     <div class="max-w-4xl mx-auto px-4">
-      <h2 class="text-2xl font-black mb-8">ALLE RESULTATER 2025</h2>
-      
+      <h2 class="text-2xl font-black mb-8">
+        {getField(resultsListSection.fields.heading)}
+      </h2>
+
       <div class="space-y-4">
         {results2025.map(race => (
           <RaceCard {...race} />
         ))}
       </div>
-      
+
       <p class="text-center text-mr-gray-500 mt-8">
-        Viser seneste 6 løb. Fuld historik kommer snart.
+        {getField(resultsFooterSection.fields.description)}
       </p>
     </div>
   </section>

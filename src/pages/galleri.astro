@@ -1,12 +1,39 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getMediaItems, getVideos, getFeaturedMediaItems, getFeaturedVideos, getPressPhotos } from '../lib/contentful';
+import { getMediaItems, getVideos, getFeaturedMediaItems, getFeaturedVideos, getPressPhotos, getPageSection } from '../lib/contentful';
 import MediaGrid from '../components/media/MediaGrid.astro';
 import YouTubePlayer from '../components/media/YouTubePlayer.astro';
 import OptimizedImage from '../components/media/OptimizedImage.astro';
 
-// Media categories
-const categories = ['ALLE', 'RACING ACTION', 'BEHIND SCENES', 'PROFESSIONEL', 'VIDEO'];
+// Get page sections from Contentful
+const catAllSection = await getPageSection('galleri-category-all') || { fields: { heading: 'ALLE', description: '' } };
+const catRacingSection = await getPageSection('galleri-category-racing') || { fields: { heading: 'RACING ACTION', description: '' } };
+const catBehindScenesSection = await getPageSection('galleri-category-behind-scenes') || { fields: { heading: 'BEHIND SCENES', description: '' } };
+const catProfessionalSection = await getPageSection('galleri-category-professional') || { fields: { heading: 'PROFESSIONEL', description: '' } };
+const catVideoSection = await getPageSection('galleri-category-video') || { fields: { heading: 'VIDEO', description: '' } };
+const featuredHeadingSection = await getPageSection('galleri-featured-heading') || { fields: { heading: 'Udvalgte Billeder', description: '' } };
+const galleryHeadingSection = await getPageSection('galleri-gallery-heading') || { fields: { heading: 'Billedgalleri', description: '' } };
+const videosHeadingSection = await getPageSection('galleri-videos-heading') || { fields: { heading: 'Video Highlights', description: '' } };
+const emptyMessageSection = await getPageSection('galleri-empty-message') || { fields: { heading: '', description: 'Ingen billeder fundet. Tjek Contentful indstillinger for at uploade medier.' } };
+const videosButtonSection = await getPageSection('galleri-videos-button') || { fields: { heading: '', description: '', buttonText: 'Se Alle Videoer', buttonUrl: '#all-videos' } };
+
+// Helper function to get field value with fallback
+const getField = (field: any): string => {
+  if (!field) return '';
+  if (typeof field === 'object' && !Array.isArray(field)) {
+    return field['da-DK'] || field['en-US'] || field;
+  }
+  return field;
+};
+
+// Media categories - now from PageSection
+const categories = [
+  getField(catAllSection.fields.heading),
+  getField(catRacingSection.fields.heading),
+  getField(catBehindScenesSection.fields.heading),
+  getField(catProfessionalSection.fields.heading),
+  getField(catVideoSection.fields.heading),
+];
 
 // Fetch data from Contentful
 let mediaItems = [];
@@ -33,10 +60,15 @@ try {
 } catch (error) {
   console.warn('Failed to fetch media from Contentful:', error);
 }
+
+// Get videos button info
+const videosButtonText = getField(videosButtonSection.fields.buttonText) || 'Se Alle Videoer';
+const videosButtonUrl = getField(videosButtonSection.fields.buttonUrl) || '#all-videos';
+const videosCountText = videos.length > 3 ? `(${videos.length})` : '';
 ---
 
-<Layout 
-  title="Galleri" 
+<Layout
+  title="Galleri"
   description="Se billeder og videoer fra Anton Madsens karting-karriere - action, behind the scenes og højdepunkter."
 >
   <!-- Hero -->
@@ -78,7 +110,7 @@ try {
           <svg class="w-6 h-6 text-mr-yellow" fill="currentColor" viewBox="0 0 24 24">
             <path d="M3.00388 11.88C2.99995 11.88 2.99995 11.88 5.09992 11.88C6.6999 11.88 8.09994 13.08 9.09992 14.28C9.39992 14.68 9.69991 15.08 9.99992 15.48C9.09994 16.08 8.09994 16.68 7.09992 17.28C6.49992 17.88 5.59991 18.48 4.69995 18.88C4.09991 19.28 3.59992 19.68 3.09992 19.88C3.09992 19.68 3.09992 19.68 2.99995 19.88"/>
           </svg>
-          Udvalgte Billeder
+          {getField(featuredHeadingSection.fields.heading)}
         </h2>
 
         <MediaGrid
@@ -94,7 +126,9 @@ try {
   <!-- Main Gallery -->
   <section class="section bg-mr-black">
     <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-2xl font-black mb-6">Billedgalleri</h2>
+      <h2 class="text-2xl font-black mb-6">
+        {getField(galleryHeadingSection.fields.heading)}
+      </h2>
 
       {mediaItems.length > 0 ? (
         <MediaGrid
@@ -108,7 +142,7 @@ try {
       ) : (
         <div class="text-center py-12">
           <p class="text-mr-gray-500">
-            Ingen billeder fundet. Tjek Contentful indstillinger for at uploade medier.
+            {getField(emptyMessageSection.fields.description)}
           </p>
         </div>
       )}
@@ -123,7 +157,7 @@ try {
           <svg class="w-6 h-6 text-mr-yellow" fill="currentColor" viewBox="0 0 24 24">
             <path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Video Highlights
+          {getField(videosHeadingSection.fields.heading)}
         </h2>
 
         <div class="grid md:grid-cols-2 gap-6 mb-8">
@@ -157,8 +191,8 @@ try {
 
         {videos.length > 3 && (
           <div class="text-center">
-            <a href="#all-videos" class="btn-primary">
-              Se Alle Videoer ({videos.length})
+            <a href={videosButtonUrl} class="btn-primary">
+              {videosButtonText} {videosCountText}
             </a>
           </div>
         )}
@@ -167,28 +201,27 @@ try {
   )}
 
   <script>
-  // Gallery filtering functionality
-  document.addEventListener('astro:page-load', () => {
-    const filters = document.querySelectorAll('.category-filter');
-    const gallery = document.querySelector('.main-gallery');
+    // Gallery filtering functionality
+    document.addEventListener('astro:page-load', () => {
+      const filters = document.querySelectorAll('.category-filter');
+      const gallery = document.querySelector('.main-gallery');
 
-    filters.forEach(filter => {
-      filter.addEventListener('click', (e) => {
-        const category = e.target.dataset.category;
+      filters.forEach(filter => {
+        filter.addEventListener('click', (e) => {
+          const category = e.target.dataset.category;
 
-        // Update active state
-        filters.forEach(f => {
-          f.classList.remove('bg-mr-yellow', 'text-mr-black');
-          f.classList.add('bg-mr-gray-800', 'text-mr-gray-400');
+          // Update active state
+          filters.forEach(f => {
+            f.classList.remove('bg-mr-yellow', 'text-mr-black');
+            f.classList.add('bg-mr-gray-800', 'text-mr-gray-400');
+          });
+          e.target.classList.remove('bg-mr-gray-800', 'text-mr-gray-400');
+          e.target.classList.add('bg-mr-yellow', 'text-mr-black');
+
+          // Filter gallery items (this would need the media items to be client-side or using Alpine.js)
+          console.log(`Filtering by category: ${category}`);
         });
-        e.target.classList.remove('bg-mr-gray-800', 'text-mr-gray-400');
-        e.target.classList.add('bg-mr-yellow', 'text-mr-black');
-
-        // Filter gallery items (this would need the media items to be client-side or using Alpine.js)
-        console.log(`Filtering by category: ${category}`);
       });
     });
-  });
-</script>
-</Layout>
+  </script>
 </Layout>
