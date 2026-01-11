@@ -1,0 +1,22 @@
+[Unit]
+Description=Madsen Racing Website Auto-Update
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/var/www/madsen-racing
+ExecStart=/usr/local/bin/webhook-deploy.sh
+StandardOutput=journal
+StandardError=journal
+
+# Restart policy
+Restart=no
+
+# Security settings
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

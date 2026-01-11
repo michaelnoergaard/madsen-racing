@@ -66,6 +66,36 @@ npm run build
 
 Output gemmes i `/dist` mappen.
 
+## 📦 Deployment
+
+### Proxmox / Self-Hosted (Recommended)
+For resource-light production hosting on your own server:
+
+**With Nginx Proxy Manager (easiest SSL setup):**
+📖 **[PROXMOX_NPM_DEPLOYMENT.md](PROXMOX_NPM_DEPLOYMENT.md)** - NPM integration guide
+
+**Standalone deployment:**
+📖 **[PROXMOX_DEPLOYMENT.md](PROXMOX_DEPLOYMENT.md)** - Complete LXC/VM setup guide
+
+**Automation & Reference:**
+🤖 **[AUTOMATION_GUIDE.md](AUTOMATION_GUIDE.md)** - Auto-update options
+⚡ **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Command cheat sheet
+
+**Quick start:**
+```bash
+# With NPM: On your Proxmox LXC container
+./scripts/deploy-initial-npm.sh
+
+# Standalone: On your Proxmox LXC container
+./scripts/deploy-initial.sh
+```
+
+### Alternative: Docker
+📖 **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Docker deployment guide
+
+### Alternative: Netlify / Vercel
+Standard static site deployment with GitHub Actions workflow.
+
 ## 📄 Sider
 
 | Side | URL | Beskrivelse |
