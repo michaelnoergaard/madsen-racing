@@ -24,7 +24,7 @@
 
 import pkg from 'contentful-management';
 const { createClient } = pkg;
-import { exifr } from 'exifr';
+import exifr from 'exifr';
 import 'dotenv/config';
 
 const SPACE_ID = process.env.CONTENTFUL_SPACE_ID;

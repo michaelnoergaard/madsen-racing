@@ -72,7 +72,10 @@
       "Bash(git merge:*)",
       "Bash(git pull:*)",
       "Bash(DRY_RUN=true npm run import:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(while read f)",
+      "Bash(do file=\"/var/www/madsen-racing/media/Gokart/$f\")",
+      "Bash(DRY_RUN=true node scripts/upload-and-import-media.js:*)"
     ],
     "deny": [],
     "ask": []
