@@ -48,7 +48,6 @@ export interface SponsorFields {
   name: EntryFieldTypes.Text;
   logo: EntryFieldTypes.AssetLink;
   website?: EntryFieldTypes.Text;
-  tier: EntryFieldTypes.Text; // 'guld' | 'sølv' | 'bronze'
   description?: EntryFieldTypes.Text;
   active: EntryFieldTypes.Boolean;
 }
@@ -278,7 +277,7 @@ export async function getSponsors(preview = false): Promise<SponsorEntry[]> {
     const entries = await client.getEntries({
       content_type: 'sponsor',
       'fields.active': true,
-      order: ['fields.tier', 'fields.name'],
+      order: ['fields.name'],
     }) as { items: SponsorEntry[] };
 
     return entries.items;
@@ -288,31 +287,6 @@ export async function getSponsors(preview = false): Promise<SponsorEntry[]> {
   }
 }
 
-/**
- * Get sponsors by tier
- */
-export async function getSponsorsByTier(tier: 'guld' | 'sølv' | 'bronze', preview = false): Promise<SponsorEntry[]> {
-  const client = getClient(preview);
-
-  if (!client) {
-    console.warn('Contentful client not configured - returning empty sponsors by tier array');
-    return [];
-  }
-
-  try {
-    const entries = await client.getEntries({
-      content_type: 'sponsor',
-      'fields.active': true,
-      'fields.tier': tier,
-      order: ['fields.name'],
-    }) as { items: SponsorEntry[] };
-
-    return entries.items;
-  } catch (error) {
-    console.warn('Failed to fetch sponsors by tier from Contentful:', error);
-    return [];
-  }
-}
 
 /**
  * Get page content by slug

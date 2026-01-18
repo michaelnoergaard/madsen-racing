@@ -4,6 +4,7 @@ import RaceCard from '../components/RaceCard.astro';
 import { getRaces, formatDate, getPageSection } from '../lib/contentful';
 
 // Get page sections from Contentful
+const winterSection = await getPageSection('kalender-winter') || { fields: { heading: 'VINTER', description: '' } };
 const springSection = await getPageSection('kalender-spring') || { fields: { heading: 'FORÅR', description: '' } };
 const summerSection = await getPageSection('kalender-summer') || { fields: { heading: 'SOMMER', description: '' } };
 const autumnSection = await getPageSection('kalender-autumn') || { fields: { heading: 'EFTERÅR', description: '' } };
@@ -41,6 +42,7 @@ try {
 
 // Group races by season
 const groupRacesBySeason = (races) => {
+  const vinter = [];
   const forår = [];
   const sommer = [];
   const efterår = [];
@@ -58,11 +60,13 @@ const groupRacesBySeason = (races) => {
         sommer.push(race);
       } else if (month >= 9 && month <= 11) { // September-November
         efterår.push(race);
+      } else { // December (12), January (1), February (2)
+        vinter.push(race);
       }
     }
   });
 
-  return { forår, sommer, efterår };
+  return { vinter, forår, sommer, efterår };
 };
 
 const races2026 = groupRacesBySeason(allRaces);
@@ -85,6 +89,21 @@ const ctaButtonUrl = getField(ctaSection.fields.buttonUrl) || 'https://instagram
       <p class="text-mr-gray-400 max-w-2xl mx-auto">
         Følg med i Madsen Racing's sæson. Her finder du alle løb, datoer og baner for 2026.
       </p>
+    </div>
+  </section>
+
+  <!-- Winter -->
+  <section class="section bg-mr-black">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-2xl font-black mb-6 flex items-center gap-3">
+        <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+        {getField(winterSection.fields.heading)}
+      </h2>
+      <div class="space-y-4">
+        {races2026.vinter.map(race => (
+          <RaceCard {...race} />
+        ))}
+      </div>
     </div>
   </section>
 

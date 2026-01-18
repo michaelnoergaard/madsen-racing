@@ -3,20 +3,13 @@ import OptimizedImage from './media/OptimizedImage.astro';
 
 interface Props {
   name: string;
-  tier: 'guld' | 'sølv' | 'bronze' | string;
   logo?: string;
   website?: string;
   width?: number;
   height?: number;
 }
 
-const { name, tier, logo, website, width = 200, height = 100 } = Astro.props;
-
-const tierClass = {
-  guld: 'sponsor-logo-guld',
-  sølv: 'sponsor-logo-sølv',
-  bronze: 'sponsor-logo-bronze',
-}[tier] || 'sponsor-logo-bronze';
+const { name, logo, website, width = 200, height = 100 } = Astro.props;
 ---
 
 {website ? (
@@ -24,7 +17,7 @@ const tierClass = {
     href={website}
     target="_blank"
     rel="noopener noreferrer"
-    class:list={['sponsor-logo', tierClass]}
+    class="sponsor-logo"
     title={name}
   >
     {logo ? (
@@ -43,7 +36,7 @@ const tierClass = {
     )}
   </a>
 ) : (
-  <div class:list={['sponsor-logo', tierClass]} title={name}>
+  <div class="sponsor-logo" title={name}>
     {logo ? (
       <OptimizedImage
         src={logo}

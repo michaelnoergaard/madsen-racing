@@ -9,131 +9,92 @@ Madsen Racing is a static website for Anton Madsen, a Danish karting driver. Bui
 ## Development Commands
 
 ```bash
-# Start development server (runs on localhost:4321)
-npm run dev
+npm run dev        # Start dev server (localhost:4321, binds 0.0.0.0)
+npm run build      # Build for production (output: /dist)
+npm run preview    # Preview production build
+```
 
-# Build for production
-npm run build
+### Docker (Local Development)
 
-# Preview production build
-npm run preview
+```bash
+npm run docker:local           # Build and run with docker-compose
+npm run docker:local-detached  # Run in background
+npm run docker:local-stop      # Stop containers
+npm run docker:local-logs      # View logs
+```
+
+### Contentful Management Scripts
+
+```bash
+npm run setup:contentful    # One-time: Create all content models
+npm run setup:forside       # Create homepage content
+npm run setup:sponsors      # Setup sponsor packages (bronze/silver/gold)
+npm run setup:sections      # Setup page sections
+npm run check:published     # Check content publication status
 ```
 
 ## Deployment
 
-The site is deployed to production via simple build:
 ```bash
 # On production server (/var/www/madsen-racing)
-git pull
-npm run build
+git pull && npm run build
 ```
 
-The build output is in `/dist` which is served by the web server.
-
-## Contentful CMS Setup & Management
-
-The site uses Contentful for all dynamic content. Initial setup is required.
-
-### Environment Variables
-
-Required in `.env`:
-```
-CONTENTFUL_SPACE_ID=xxx
-CONTENTFUL_ACCESS_TOKEN=xxx          # Delivery API token
-CONTENTFUL_PREVIEW_TOKEN=xxx         # Preview API token (optional)
-CONTENTFUL_MANAGEMENT_TOKEN=xxx      # Management API token (for setup scripts only)
-SITE_URL=https://madsenracing.dk
-```
-
-### Contentful Setup Scripts
-
-```bash
-# One-time: Create all content models in Contentful
-npm run setup:contentful
-
-# Create homepage hero/content
-npm run setup:forside
-
-# Setup sponsor packages (bronze/silver/gold tiers)
-npm run setup:sponsors
-
-# Setup page sections
-npm run setup:sections
-
-# Update page content entries
-npm run update:pagecontent
-
-# Check page content status
-npm run check:pagecontent
-npm run check:published
-```
-
-See `CONTENTFUL_SETUP.md` for detailed setup instructions.
+The build output in `/dist` is served by the web server.
 
 ## Architecture
 
 ### Data Flow
 
-1. **Contentful CMS** stores all content (races, sponsors, stats, media, page content)
-2. **`src/lib/contentful.ts`** - Single source of truth for:
-   - Contentful client initialization (production and preview modes)
-   - TypeScript interfaces for all content types
-   - Data fetching functions (`getRaces`, `getSponsors`, `getPageContent`, etc.)
-   - Helper functions (date formatting, image URLs, YouTube thumbnails)
-3. **Astro pages** fetch data at build time via `contentful.ts` and generate static HTML
+1. **Contentful CMS** → All content (races, sponsors, stats, media, pages)
+2. **`src/lib/contentful.ts`** → Single data access layer with TypeScript interfaces, fetch functions, and helpers
+3. **Astro pages** → Fetch at build time, generate static HTML
+
+### Key Patterns
+
+**Contentful Client Resilience**: All fetch functions return empty arrays/null if Contentful is not configured. No hard failures - allows building without credentials.
+
+**Localized Fields**: Some Contentful fields use locale keys (`da-DK`, `en-US`). Handle both:
+```typescript
+const value = field['da-DK'] || field['en-US'] || field;
+```
+
+**Image URLs**: Use `getImageUrl(asset, width?, quality?)` helper - handles Contentful URL prefix and WebP conversion.
 
 ### Content Types
 
-Key Contentful models (defined in `contentful.ts`):
-- `race` - Race schedule, results, track info
-- `sponsor` - Sponsor logos and info (tier: guld/sølv/bronze)
-- `pageContent` - Rich text page content with hero images and CTAs
-- `driverStats` - Season statistics
-- `mediaItem` - Gallery photos (racing-action, behind-scenes, professional)
-- `video` - YouTube videos
-- `pressPhoto` - High-res press photos
-- `sponsorPackage` - Sponsorship tiers for the sponsors page
-- `pageSection` - Reusable page sections
-
-### Client Behavior
-
-The Contentful client is resilient:
-- Returns empty arrays/null if not configured (no hard failures)
-- All fetch functions wrap in try/catch with warnings
-- Preview mode supported via `preview` parameter on fetch functions
-
-### Site Structure
-
-```
-src/
-├── pages/
-│   ├── index.astro        # Homepage (hero, countdown, stats, Instagram)
-│   ├── om-anton.astro     # About page
-│   ├── kalender.astro     # Race calendar
-│   ├── resultater.astro   # Results and stats
-│   ├── galleri.astro      # Photo/video gallery
-│   └── sponsorer.astro    # Sponsors page
-├── components/            # Reusable Astro components
-├── layouts/
-│   └── Layout.astro       # Main layout with Header/Footer
-├── lib/
-│   └── contentful.ts      # Contentful integration (all data fetching)
-└── styles/                # Global CSS
-```
+All defined in `src/lib/contentful.ts`:
+- `race` - Schedule/results with season filtering
+- `sponsor` - Logos with tiers (guld/sølv/bronze)
+- `pageContent` - Rich text pages with hero images and CTA buttons
+- `driverStats`, `driverProfile` - Driver information
+- `mediaItem`, `video`, `pressPhoto` - Gallery content
+- `sponsorPackage`, `pageSection`, `siteConfig` - Site configuration
 
 ### Brand Design
 
-Colors (defined in `tailwind.config.mjs`):
-- Black: `#0A0A0A` (primary background)
-- Yellow: `#FFD600` (accent, CTA)
-- Purple: `#7B2D8E` (secondary accent)
-- White: `#FFFFFF` (text)
+Colors (Tailwind utilities `mr-*`):
+- `mr-black`: #0A0A0A (background)
+- `mr-yellow`: #FFD600 (accent, CTAs)
+- `mr-purple`: #7B2D8E (secondary)
+- `mr-white`: #FFFFFF
 
-Typography: Inter (sans), Montserrat (display)
+Typography: Inter (sans), Montserrat (display/headings)
+
+## Environment Variables
+
+Required in `.env`:
+```
+CONTENTFUL_SPACE_ID=xxx
+CONTENTFUL_ACCESS_TOKEN=xxx          # Delivery API
+CONTENTFUL_PREVIEW_TOKEN=xxx         # Preview API (optional)
+CONTENTFUL_MANAGEMENT_TOKEN=xxx      # Management API (setup scripts only)
+SITE_URL=https://madsenracing.dk
+```
 
 ## Important Notes
 
 - All data fetching happens at build time (static generation)
 - Date formatting uses Danish locale (`da-DK`)
-- Contentful entries must be **Published** to appear on the site
-- Image optimization: AVIF, WebP, JPG formats via Sharp
+- Contentful entries must be **Published** to appear on site
+- Site language is Danish (`lang="da"`)

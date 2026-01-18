@@ -70,7 +70,9 @@
       "Bash(git fetch:*)",
       "Bash(git ls-tree:*)",
       "Bash(git merge:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(DRY_RUN=true npm run import:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

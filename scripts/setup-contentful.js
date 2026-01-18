@@ -85,13 +85,6 @@ const contentModels = [
           }
         }]
       },
-      {
-        id: 'tier',
-        name: 'Tier',
-        type: 'Symbol',
-        required: true,
-        validations: [{ in: ['guld', 'sølv', 'bronze'] }]
-      },
       { id: 'description', name: 'Description', type: 'Text', required: false },
       { id: 'active', name: 'Active', type: 'Boolean', required: true },
     ],
@@ -338,6 +331,101 @@ const contentModels = [
       }
     ],
   },
+  {
+    id: 'siteConfig',
+    name: 'Site Config',
+    description: 'Global site configuration',
+    displayField: 'siteName',
+    fields: [
+      { id: 'siteName', name: 'Site Name', type: 'Symbol', required: true },
+      { id: 'tagline', name: 'Tagline', type: 'Symbol', required: true },
+      { id: 'contactEmail', name: 'Contact Email', type: 'Symbol', required: true },
+      { id: 'managerName', name: 'Manager Name', type: 'Symbol', required: false },
+      { id: 'currentSeason', name: 'Current Season', type: 'Symbol', required: true },
+      { id: 'previousSeason', name: 'Previous Season', type: 'Symbol', required: true },
+      { id: 'socialInstagram', name: 'Instagram URL', type: 'Symbol', required: true },
+      { id: 'socialFacebook', name: 'Facebook URL', type: 'Symbol', required: true },
+      { id: 'navigationItems', name: 'Navigation Items', type: 'Array', items: { type: 'Symbol' }, required: false },
+      { id: 'footerText', name: 'Footer Text', type: 'Symbol', required: false },
+    ],
+  },
+  {
+    id: 'driverProfile',
+    name: 'Driver Profile',
+    description: 'Driver profile information',
+    displayField: 'name',
+    fields: [
+      { id: 'name', name: 'Name', type: 'Symbol', required: true },
+      { id: 'age', name: 'Age', type: 'Integer', required: true },
+      { id: 'city', name: 'City', type: 'Symbol', required: true },
+      { id: 'team', name: 'Team', type: 'Symbol', required: true },
+      { id: 'class', name: 'Class', type: 'Symbol', required: true },
+      { id: 'kartBrand', name: 'Kart Brand', type: 'Symbol', required: true },
+      { id: 'number', name: 'Number', type: 'Integer', required: true },
+      { id: 'startYear', name: 'Start Year', type: 'Integer', required: true },
+      { id: 'dreamQuote', name: 'Dream Quote', type: 'Symbol', required: true },
+      { id: 'dreamDescription', name: 'Dream Description', type: 'Text', required: true },
+      { id: 'bioHeadline', name: 'Bio Headline', type: 'Symbol', required: false },
+      { id: 'bioSubtitle', name: 'Bio Subtitle', type: 'Symbol', required: false },
+      { id: 'portraitImage', name: 'Portrait Image', type: 'Link', linkType: 'Asset', required: false },
+    ],
+  },
+  {
+    id: 'mediaItem',
+    name: 'Media Item',
+    description: 'Photo/video gallery item',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      { id: 'description', name: 'Description', type: 'Text', required: false },
+      { id: 'file', name: 'File', type: 'Link', linkType: 'Asset', required: true },
+      { id: 'type', name: 'Type', type: 'Symbol', required: true, validations: [{ in: ['image', 'video'] }] },
+      { id: 'category', name: 'Category', type: 'Symbol', required: true, validations: [{ in: ['racing-action', 'behind-scenes', 'professional', 'interviews'] }] },
+      { id: 'tags', name: 'Tags', type: 'Array', items: { type: 'Symbol' }, required: false },
+      { id: 'date', name: 'Date', type: 'Date', required: true },
+      { id: 'featured', name: 'Featured', type: 'Boolean', required: true },
+      { id: 'season', name: 'Season', type: 'Symbol', required: false },
+      { id: 'photographer', name: 'Photographer', type: 'Symbol', required: false },
+      { id: 'location', name: 'Location', type: 'Symbol', required: false },
+    ],
+  },
+  {
+    id: 'video',
+    name: 'Video',
+    description: 'YouTube video entry',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      { id: 'description', name: 'Description', type: 'RichText', required: false },
+      { id: 'thumbnail', name: 'Thumbnail', type: 'Link', linkType: 'Asset', required: true },
+      { id: 'youtubeUrl', name: 'YouTube URL', type: 'Symbol', required: true },
+      { id: 'youtubeVideoId', name: 'YouTube Video ID', type: 'Symbol', required: true },
+      { id: 'duration', name: 'Duration (seconds)', type: 'Integer', required: false },
+      { id: 'category', name: 'Category', type: 'Symbol', required: true, validations: [{ in: ['race-highlights', 'interviews', 'technical', 'team-content'] }] },
+      { id: 'uploadDate', name: 'Upload Date', type: 'Date', required: true },
+      { id: 'season', name: 'Season', type: 'Symbol', required: false },
+      { id: 'tags', name: 'Tags', type: 'Array', items: { type: 'Symbol' }, required: false },
+      { id: 'featured', name: 'Featured', type: 'Boolean', required: true },
+    ],
+  },
+  {
+    id: 'pressPhoto',
+    name: 'Press Photo',
+    description: 'Downloadable press photos',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      { id: 'description', name: 'Description', type: 'Text', required: false },
+      { id: 'photo', name: 'Photo', type: 'Link', linkType: 'Asset', required: true },
+      { id: 'credit', name: 'Credit', type: 'Symbol', required: true },
+      { id: 'downloadUrl', name: 'Download URL', type: 'Symbol', required: false },
+      { id: 'category', name: 'Category', type: 'Symbol', required: true },
+      { id: 'date', name: 'Date', type: 'Date', required: true },
+      { id: 'resolution', name: 'Resolution', type: 'Symbol', required: false },
+      { id: 'fileFormat', name: 'File Format', type: 'Symbol', required: true, validations: [{ in: ['jpg', 'png', 'webp'] }] },
+      { id: 'fileSize', name: 'File Size (KB)', type: 'Integer', required: true },
+    ],
+  },
 ];
 
 async function createContentModel(environment, model) {
@@ -352,7 +440,9 @@ async function createContentModel(environment, model) {
       return contentType;
     } catch (getError) {
       // Content type doesn't exist, so create it
-      if (getError.status === 404) {
+      const isNotFound = getError.status === 404 || getError.statusCode === 404 ||
+        (getError.message && getError.message.includes('could not be found'));
+      if (isNotFound) {
         contentType = await environment.createContentTypeWithId(model.id, {
           name: model.name,
           description: model.description,

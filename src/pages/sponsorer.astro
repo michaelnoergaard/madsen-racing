@@ -1,23 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SponsorLogo from '../components/SponsorLogo.astro';
-import { getSponsorsByTier, getImageUrl, getSponsorPackages, getPageSection } from '../lib/contentful';
+import { getSponsors, getImageUrl, getPageSections } from '../lib/contentful';
 
 interface Sponsor {
   name: string;
-  tier: 'guld' | 'sølv' | 'bronze';
   logo?: string;
   website?: string;
   description?: string;
-}
-
-interface SponsorPackage {
-  name: string;
-  tier: string;
-  price: string;
-  color: string;
-  popular: boolean;
-  features: string[];
 }
 
 // Helper function to get field value with Danish locale fallback
@@ -48,56 +38,18 @@ try {
   console.error('Error fetching page sections:', error);
 }
 
-// Get tier heading sections
-const tierGuldSection = { heading: getField(sections['sponsorer-tier-guld']?.heading) || 'GULD PARTNERE' };
-const tierSølvSection = { heading: getField(sections['sponsorer-tier-sølv']?.heading) || 'SØLV PARTNERE' };
-const tierBronzeSection = { heading: getField(sections['sponsorer-tier-bronze']?.heading) || 'BRONZE PARTNERE' };
-
 // Get form and button sections
-const popularBadgeSection = { heading: getField(sections['sponsorer-popular-badge']?.heading) || 'POPULÆR' };
-const priceLabelSection = { description: getField(sections['sponsorer-price-label']?.description) || 'pr. sæson' };
-const contactButtonSection = { buttonText: getField(sections['sponsorer-contact-button']?.buttonText) || 'KONTAKT OS', buttonUrl: getField(sections['sponsorer-contact-button']?.buttonUrl) || '#kontakt' };
 const submitButtonSection = { buttonText: getField(sections['sponsorer-submit-button']?.buttonText) || 'SEND BESKED' };
 const contactEmailSection = { description: getField(sections['sponsorer-contact-email']?.description) || 'Eller kontakt os direkte:', buttonText: getField(sections['sponsorer-contact-email']?.buttonText) || 'kontakt@madsenracing.dk', buttonUrl: getField(sections['sponsorer-contact-email']?.buttonUrl) || 'mailto:kontakt@madsenracing.dk' };
-const customPackageSection = { description: getField(sections['sponsorer-custom-package-text']?.description) || 'Ønsker du en skræddersyet pakke? Kontakt os for at høre mere.', buttonText: getField(sections['sponsorer-custom-package-text']?.buttonText) || 'Kontakt os', buttonUrl: getField(sections['sponsorer-custom-package-text']?.buttonUrl) || '#kontakt' };
 
 // Get sponsors from Contentful
-let sponsors: {
-  guld: Sponsor[];
-  sølv: Sponsor[];
-  bronze: Sponsor[];
-} = {
-  guld: [],
-  sølv: [],
-  bronze: [],
-};
+let sponsors: Sponsor[] = [];
 
 try {
-  const sponsorsByTier = await Promise.all([
-    getSponsorsByTier('guld'),
-    getSponsorsByTier('sølv'),
-    getSponsorsByTier('bronze')
-  ]);
+  const sponsorEntries = await getSponsors();
 
-  sponsors.guld = sponsorsByTier[0].map((sponsor: any) => ({
+  sponsors = sponsorEntries.map((sponsor: any) => ({
     name: sponsor.fields.name,
-    tier: sponsor.fields.tier,
-    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
-    website: sponsor.fields.website,
-    description: sponsor.fields.description,
-  }));
-
-  sponsors.sølv = sponsorsByTier[1].map((sponsor: any) => ({
-    name: sponsor.fields.name,
-    tier: sponsor.fields.tier,
-    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
-    website: sponsor.fields.website,
-    description: sponsor.fields.description,
-  }));
-
-  sponsors.bronze = sponsorsByTier[2].map((sponsor: any) => ({
-    name: sponsor.fields.name,
-    tier: sponsor.fields.tier,
     logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
     website: sponsor.fields.website,
     description: sponsor.fields.description,
@@ -105,96 +57,12 @@ try {
 
 } catch (error) {
   console.error('Error fetching sponsors:', error);
-  // Fallback to empty sponsors
-}
-
-// Get sponsor packages from Contentful
-let packages: SponsorPackage[] = [];
-
-try {
-  const packageEntries = await getSponsorPackages();
-
-  packages = packageEntries.map((pkg: any) => {
-    const tier = getField(pkg.fields.tier);
-    const name = getField(pkg.fields.name);
-    const price = getField(pkg.fields.price);
-    const priceLabel = getField(pkg.fields.priceLabel);
-    const features = getField(pkg.fields.features) || [];
-
-    // Map tier to border color
-    const colorMap: Record<string, string> = {
-      'bronze': 'border-amber-700',
-      'silver': 'border-mr-gray-400',
-      'gold': 'border-mr-yellow',
-    };
-
-    // Format price display
-    const priceDisplay = priceLabel || `${price.toLocaleString('da-DK')} kr`;
-
-    return {
-      name: name.toUpperCase(),
-      tier,
-      price: priceDisplay,
-      color: colorMap[tier] || 'border-mr-gray-400',
-      popular: tier === 'gold', // Gold is always popular
-      features,
-    };
-  });
-} catch (error) {
-  console.error('Error fetching sponsor packages:', error);
-  // Fallback to hardcoded packages if Contentful fails
-  packages = [
-    {
-      name: 'BRONZE',
-      tier: 'bronze',
-      price: '5.000 kr',
-      color: 'border-amber-700',
-      popular: false,
-      features: [
-        'Logo på website',
-        'Omtale på social media (1x)',
-        'Tak i nyhedsbreve',
-      ]
-    },
-    {
-      name: 'SØLV',
-      tier: 'silver',
-      price: '7.500 kr',
-      color: 'border-mr-gray-400',
-      popular: false,
-      features: [
-        'Alt fra Bronze',
-        'Logo på kørerdragt',
-        'Omtale på social media (3x)',
-        'Billeder til egen markedsføring',
-      ]
-    },
-    {
-      name: 'GULD',
-      tier: 'gold',
-      price: '10.000+ kr',
-      color: 'border-mr-yellow',
-      popular: true,
-      features: [
-        'Alt fra Sølv',
-        'Prominent logo på kart',
-        'VIP-adgang til udvalgte løb',
-        'Månedlig social media eksponering',
-        'Skræddersyet partnerskab',
-      ]
-    },
-  ];
 }
 
 // Extract section content with fallbacks
 const heroSection = sections['sponsorer-hero'] || {
   heading: 'VORES PARTNERE',
   description: 'Tak til alle der støtter Madsen Racing. Sammen gør vi drømmen om professionel motorsport mulig.',
-};
-
-const packagesSection = sections['sponsorer-packages'] || {
-  heading: 'BLIV SPONSOR',
-  description: 'Støt en ung dansk racertalent og få eksponering for din virksomhed. Vælg den pakke der passer til dit budget.',
 };
 
 const kontaktSection = sections['sponsorer-kontakt'] || {
@@ -219,101 +87,17 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
   </section>
 
   <!-- Current Sponsors -->
-  <section class="section bg-mr-black">
-    <div class="max-w-6xl mx-auto px-4">
-      <!-- Gold -->
-      {sponsors.guld.length > 0 && (
-        <div class="mb-12">
-          <h3 class="text-lg font-bold text-mr-yellow mb-6 text-center">{tierGuldSection.heading}</h3>
-          <div class="flex flex-wrap justify-center gap-6">
-            {sponsors.guld.map(s => (
-              <SponsorLogo name={s.name} tier={s.tier} />
-            ))}
-          </div>
+  {sponsors.length > 0 && (
+    <section class="section bg-mr-black">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex flex-wrap justify-center gap-6">
+          {sponsors.map(s => (
+            <SponsorLogo name={s.name} logo={s.logo} website={s.website} />
+          ))}
         </div>
-      )}
-
-      <!-- Silver -->
-      {sponsors.sølv.length > 0 && (
-        <div class="mb-12">
-          <h3 class="text-lg font-bold text-mr-gray-400 mb-6 text-center">{tierSølvSection.heading}</h3>
-          <div class="flex flex-wrap justify-center gap-6">
-            {sponsors.sølv.map(s => (
-              <SponsorLogo name={s.name} tier={s.tier} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <!-- Bronze -->
-      {sponsors.bronze.length > 0 && (
-        <div>
-          <h3 class="text-lg font-bold text-amber-700 mb-6 text-center">{tierBronzeSection.heading}</h3>
-          <div class="flex flex-wrap justify-center gap-6">
-            {sponsors.bronze.map(s => (
-              <SponsorLogo name={s.name} tier={s.tier} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  </section>
-
-  <!-- Become a Sponsor -->
-  <section class="section bg-mr-gray-900/50">
-    <div class="max-w-6xl mx-auto px-4">
-      <div class="text-center mb-12">
-        <h2 class="section-title" set:html={packagesSection.heading.replace(/SPONSOR/g, '<span class="text-mr-yellow">SPONSOR</span>')}></h2>
-        <p class="section-subtitle max-w-2xl mx-auto">
-          {packagesSection.description}
-        </p>
       </div>
-
-      <div class="grid md:grid-cols-3 gap-6 mb-12">
-        {packages.map(pkg => (
-          <div class:list={[
-            'card relative',
-            `border-2 ${pkg.color}`,
-            pkg.popular && 'scale-105'
-          ]}>
-            {pkg.popular && (
-              <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-mr-yellow text-mr-black text-xs font-bold rounded-full">
-                {popularBadgeSection.heading}
-              </div>
-            )}
-
-            <div class="text-center mb-6">
-              <h3 class="text-xl font-black mb-2">{pkg.name}</h3>
-              <div class="text-3xl font-black text-mr-yellow">{pkg.price}</div>
-              <p class="text-mr-gray-500 text-sm">{priceLabelSection.description}</p>
-            </div>
-
-            <ul class="space-y-3 mb-6">
-              {pkg.features.map(feature => (
-                <li class="flex items-start gap-2 text-sm">
-                  <svg class="w-5 h-5 text-mr-yellow flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  <span class="text-mr-gray-300">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <a href={contactButtonSection.buttonUrl} class:list={[
-              'block text-center py-3 rounded-lg font-bold transition-all',
-              pkg.popular ? 'bg-mr-yellow text-mr-black hover:bg-mr-yellow/90' : 'bg-mr-gray-700 hover:bg-mr-gray-600'
-            ]}>
-              {contactButtonSection.buttonText}
-            </a>
-          </div>
-        ))}
-      </div>
-
-      <p class="text-center text-mr-gray-400">
-        {customPackageSection.description} <a href={customPackageSection.buttonUrl} class="text-mr-yellow hover:underline">{customPackageSection.buttonText}</a>.
-      </p>
-    </div>
-  </section>
+    </section>
+  )}
 
   <!-- Contact Form -->
   <section id="kontakt" class="section bg-mr-black">
