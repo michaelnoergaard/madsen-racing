@@ -107,6 +107,13 @@ export interface MediaItemFields {
   season?: EntryFieldTypes.Symbol;
   photographer?: EntryFieldTypes.Text;
   location?: EntryFieldTypes.Text;
+  // EXIF metadata fields (auto-extracted from images)
+  cameraModel?: EntryFieldTypes.Text; // e.g., "Canon EOS R5"
+  iso?: EntryFieldTypes.Integer; // ISO sensitivity
+  aperture?: EntryFieldTypes.Text; // e.g., "f/2.8"
+  shutterSpeed?: EntryFieldTypes.Text; // e.g., "1/500"
+  focalLength?: EntryFieldTypes.Text; // e.g., "35mm"
+  gpsCoordinates?: EntryFieldTypes.Text; // e.g., "55.6761, 12.5683"
 }
 
 export interface VideoFields {
