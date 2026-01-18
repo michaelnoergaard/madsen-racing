@@ -100,6 +100,10 @@ function getAssetDate(asset) {
 /**
  * Extract EXIF metadata from image asset
  * Returns null for videos or if extraction fails
+ *
+ * Only extracts:
+ * - Date/time taken (for the 'date' field)
+ * - GPS coordinates (for the 'gpsCoordinates' field)
  */
 async function extractExifData(asset) {
   const file = asset.fields.file;
@@ -113,35 +117,21 @@ async function extractExifData(asset) {
 
   try {
     const exif = await exifr.parse(imageUrl, {
-      // Extract only the fields we need
-      pick: ['Make', 'Model', 'DateTimeOriginal', 'ISO', 'FNumber', 'ExposureTime', 'FocalLength', 'GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef']
+      // Extract only date and GPS data
+      pick: ['DateTimeOriginal', 'GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef']
     });
 
     if (!exif) return null;
 
     // Format the data for Contentful
     return {
-      cameraModel: exif.Make && exif.Model ? `${exif.Make} ${exif.Model}` : exif.Model || null,
       dateTaken: exif.DateTimeOriginal || null,
-      iso: exif.ISO || null,
-      aperture: exif.FNumber ? `f/${exif.FNumber}` : null,
-      shutterSpeed: exif.ExposureTime ? formatShutterSpeed(exif.ExposureTime) : null,
-      focalLength: exif.FocalLength ? `${Math.round(exif.FocalLength)}mm` : null,
       gpsCoordinates: formatGPS(exif)
     };
   } catch (error) {
     // Silent fail - many images don't have EXIF data
     return null;
   }
-}
-
-/**
- * Format shutter speed as a fraction
- */
-function formatShutterSpeed(speed) {
-  if (speed >= 1) return `${Math.round(speed)}s`;
-  if (speed >= 1/10) return `1/${Math.round(1/speed)}`;
-  return `1/${Math.round(1/speed)}`;
 }
 
 /**
@@ -213,14 +203,9 @@ async function createMediaItem(environment, asset, locale) {
     tags: { [locale]: [] }, // Empty array for tags
   };
 
-  // Add EXIF fields if available
-  if (exifData) {
-    if (exifData.cameraModel) entryFields.cameraModel = { [locale]: exifData.cameraModel };
-    if (exifData.iso) entryFields.iso = { [locale]: exifData.iso };
-    if (exifData.aperture) entryFields.aperture = { [locale]: exifData.aperture };
-    if (exifData.shutterSpeed) entryFields.shutterSpeed = { [locale]: exifData.shutterSpeed };
-    if (exifData.focalLength) entryFields.focalLength = { [locale]: exifData.focalLength };
-    if (exifData.gpsCoordinates) entryFields.gpsCoordinates = { [locale]: exifData.gpsCoordinates };
+  // Add GPS coordinates if available
+  if (exifData && exifData.gpsCoordinates) {
+    entryFields.gpsCoordinates = { [locale]: exifData.gpsCoordinates };
   }
 
   // Create the entry
@@ -236,8 +221,8 @@ async function createMediaItem(environment, asset, locale) {
     title,
     type,
     entryId: entry.sys.id,
-    hasExif: !!exifData,
-    exifData
+    hasGps: !!(exifData?.gpsCoordinates),
+    hasExifDate: !!(exifData?.dateTaken)
   };
 }
 
@@ -293,18 +278,20 @@ async function importAssetsAsMediaItems() {
 
         if (result.status === 'created') {
           created++;
-          const exifInfo = result.hasExif
-            ? ` - ${result.exifData.cameraModel || ''}, ${result.exifData.aperture || ''}, ${result.exifData.shutterSpeed || ''}`.replace(' - , ', '').replace(/, $/, '')
-            : '';
-          console.log(`  ✓ Created "${result.title}" (${result.type})${exifInfo}`);
+          const metaInfo = [];
+          if (result.hasGps) metaInfo.push('GPS');
+          if (result.hasExifDate) metaInfo.push('EXIF date');
+          const metaStr = metaInfo.length > 0 ? ` [${metaInfo.join(', ')}]` : '';
+          console.log(`  ✓ Created "${result.title}" (${result.type})${metaStr}`);
         } else if (result.status === 'skipped') {
           skipped++;
           console.log(`  ⊙ Skipped "${result.title}" - ${result.reason}`);
         } else if (result.status === 'dry-run') {
-          const exifInfo = result.exifData
-            ? ` - ${result.exifData.cameraModel || ''}, ${result.exifData.aperture || ''}, ${result.exifData.shutterSpeed || ''}`.replace(' - , ', '').replace(/, $/, '')
-            : '';
-          console.log(`  [DRY-RUN] Would create "${result.title}" (${result.type})${exifInfo}`);
+          const metaInfo = [];
+          if (result.exifData?.gpsCoordinates) metaInfo.push('GPS');
+          if (result.exifData?.dateTaken) metaInfo.push('EXIF date');
+          const metaStr = metaInfo.length > 0 ? ` [${metaInfo.join(', ')}]` : '';
+          console.log(`  [DRY-RUN] Would create "${result.title}" (${result.type})${metaStr}`);
         }
       } catch (error) {
         errors++;
@@ -322,8 +309,10 @@ async function importAssetsAsMediaItems() {
     console.log(`Skipped:              ${skipped}`);
     console.log(`Errors:               ${errors}`);
 
-    const withExif = results.filter(r => r.hasExif).length;
-    console.log(`With EXIF data:       ${withExif}`);
+    const withGps = results.filter(r => r.hasGps).length;
+    const withExifDate = results.filter(r => r.hasExifDate).length;
+    console.log(`With GPS data:        ${withGps}`);
+    console.log(`With EXIF date:       ${withExifDate}`);
     console.log('='.repeat(50));
 
     if (DRY_RUN) {
