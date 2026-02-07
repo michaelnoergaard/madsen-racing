@@ -30,3 +30,6 @@ npm-debug.log*
 # Misc
 .cache/
 /media/
+
+# Claude Code
+.claude/settings.local.json
