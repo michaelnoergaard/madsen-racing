@@ -19,6 +19,11 @@
     "check:pagecontent": "node scripts/check-pagecontent.js",
     "check:published": "node scripts/check-published.js",
     "import:media": "node scripts/import-media-from-assets.js",
+    "locales:remove-en": "node scripts/manage-locales.js",
+    "localize:mediaitem": "node scripts/localize-content-model.js",
+    "check:content-model": "node scripts/check-content-model.js",
+    "make-fields-optional": "node scripts/make-fields-optional.js",
+    "create:media": "node scripts/create-media-with-fallback.js",
     "docker:build": "docker build -t madsen-racing .",
     "docker:run": "docker run -p 4321:4321 madsen-racing",
     "docker:local": "docker-compose up --build",
@@ -35,12 +40,13 @@
     "contentful": "",
     "contentful-management": "",
     "dotenv": "",
-    "exifr": "^7.1.3",
+    "exiftool-vendored": "^30.5.0",
     "pm2": "^6.0.14",
     "tailwindcss": "",
     "typescript": ""
   },
   "devDependencies": {
-    "@types/node": ""
+    "@types/node": "",
+    "baseline-browser-mapping": "^2.9.19"
   }
 }

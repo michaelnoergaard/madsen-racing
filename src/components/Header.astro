@@ -10,7 +10,7 @@ const defaultNavStructure = [
   { href: '/', key: 'home' },
   { href: '/om-anton', key: 'about' },
   { href: '/kalender', key: 'calendar' },
-  // { href: '/resultater', key: 'results' }, // Hidden for now
+  { href: '/resultater', key: 'results' },
   { href: '/galleri', key: 'gallery' },
   { href: '/sponsorer', key: 'sponsors' },
 ];
@@ -20,7 +20,7 @@ const navLabels = siteConfig?.fields.navigationItems || [
   'HJEM',
   'OM ANTON',
   'KALENDER 2026',
-  // 'RESULTATER', // Hidden for now
+  'RESULTATER',
   'GALLERI',
   'SPONSORER',
 ];
@@ -30,6 +30,9 @@ const navItems = defaultNavStructure.map((item, index) => ({
   ...item,
   label: navLabels[index] || item.label,
 }));
+
+// Filter out RESULTATER (hidden until 2026 results are available)
+const filteredNavItems = navItems.filter(item => item.href !== '/resultater');
 
 // Get social URLs from SiteConfig or use fallbacks
 const socialInstagram = siteConfig?.fields.socialInstagram || 'https://instagram.com/madsenracing22';
@@ -57,7 +60,7 @@ const currentPath = Astro.url.pathname;
 
       <!-- Desktop Navigation -->
       <nav class="hidden md:flex items-center gap-1">
-        {navItems.map(item => (
+        {filteredNavItems.map(item => (
           <a
             href={item.href}
             class:list={[
@@ -112,7 +115,7 @@ const currentPath = Astro.url.pathname;
   <!-- Mobile Navigation -->
   <div id="mobile-menu" class="hidden md:hidden bg-mr-black/95 backdrop-blur-md border-t border-mr-gray-800">
     <nav class="px-4 py-4 space-y-2">
-      {navItems.map(item => (
+      {filteredNavItems.map(item => (
         <a
           href={item.href}
           class:list={[

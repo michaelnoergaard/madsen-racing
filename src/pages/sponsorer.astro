@@ -50,7 +50,7 @@ try {
 
   sponsors = sponsorEntries.map((sponsor: any) => ({
     name: sponsor.fields.name,
-    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 200) : undefined,
+    logo: sponsor.fields.logo ? getImageUrl(sponsor.fields.logo, 1200, 85) : undefined,
     website: sponsor.fields.website,
     description: sponsor.fields.description,
   }));
@@ -88,9 +88,9 @@ const kontaktSection = sections['sponsorer-kontakt'] || {
 
   <!-- Current Sponsors -->
   {sponsors.length > 0 && (
-    <section class="section bg-mr-black">
+    <section class="section bg-mr-white">
       <div class="max-w-6xl mx-auto px-4">
-        <div class="flex flex-wrap justify-center gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 justify-items-center gap-12 max-w-5xl mx-auto">
           {sponsors.map(s => (
             <SponsorLogo name={s.name} logo={s.logo} website={s.website} />
           ))}

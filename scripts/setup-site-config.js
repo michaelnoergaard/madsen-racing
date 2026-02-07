@@ -72,20 +72,20 @@ const siteConfigModel = {
   ],
 };
 
-// Initial SiteConfig entry data
+// Initial SiteConfig entry data (both en-US and da-DK required)
 const initialSiteConfig = {
   contentType: 'siteConfig',
   fields: {
-    siteName: { 'da-DK': 'Madsen Racing' },
-    tagline: { 'da-DK': 'DANISH KARTING' },
-    contactEmail: { 'da-DK': 'kontakt@madsenracing.dk' },
-    managerName: { 'da-DK': 'Per Madsen' },
-    currentSeason: { 'da-DK': '2026' },
-    previousSeason: { 'da-DK': '2025' },
-    socialInstagram: { 'da-DK': 'https://instagram.com/madsenracing22' },
-    socialFacebook: { 'da-DK': 'https://facebook.com/madsenracing' },
-    navigationItems: { 'da-DK': ['HJEM', 'OM ANTON', 'KALENDER 2026', 'RESULTATER', 'GALLERI', 'SPONSORER'] },
-    footerText: { 'da-DK': 'Designet med ❤️ for racing' },
+    siteName: { 'en-US': 'Madsen Racing', 'da-DK': 'Madsen Racing' },
+    tagline: { 'en-US': 'DANISH KARTING', 'da-DK': 'DANISH KARTING' },
+    contactEmail: { 'en-US': 'kontakt@madsenracing.dk', 'da-DK': 'kontakt@madsenracing.dk' },
+    managerName: { 'en-US': 'Per Madsen', 'da-DK': 'Per Madsen' },
+    currentSeason: { 'en-US': '2026', 'da-DK': '2026' },
+    previousSeason: { 'en-US': '2025', 'da-DK': '2025' },
+    socialInstagram: { 'en-US': 'https://instagram.com/madsenracing22', 'da-DK': 'https://instagram.com/madsenracing22' },
+    socialFacebook: { 'en-US': 'https://www.facebook.com/profile.php?id=100065028660133', 'da-DK': 'https://www.facebook.com/profile.php?id=100065028660133' },
+    navigationItems: { 'en-US': ['HJEM', 'OM ANTON', 'KALENDER 2026', 'RESULTATER', 'GALLERI', 'SPONSORER'], 'da-DK': ['HJEM', 'OM ANTON', 'KALENDER 2026', 'RESULTATER', 'GALLERI', 'SPONSORER'] },
+    footerText: { 'en-US': 'Designet med ❤️ for racing', 'da-DK': 'Designet med ❤️ for racing' },
   },
 };
 

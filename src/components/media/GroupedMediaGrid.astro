@@ -1,0 +1,70 @@
+---
+import MediaGrid from './MediaGrid.astro';
+import { groupMediaByYearMonth, getSortedYearMonthKeys, formatYearMonthDanish, getField } from '../../lib/contentful';
+
+export interface Props {
+  items: any[];
+  category?: string;
+  layout?: 'grid' | 'masonry';
+  columns?: '2' | '3' | '4';
+  gap?: 'small' | 'medium' | 'large';
+  className?: string;
+}
+
+const {
+  items = [],
+  category = 'all',
+  layout = 'grid',
+  columns = '3',
+  gap = 'medium',
+  className = '',
+} = Astro.props;
+
+// Group items by year-month
+const groups = groupMediaByYearMonth(items);
+const sortedKeys = getSortedYearMonthKeys(groups);
+
+// Filter groups by category if specified
+const filteredGroups = sortedKeys.map(key => ({
+  key,
+  label: formatYearMonthDanish(groups[key][0].fields.date),
+  items: category === 'all'
+    ? groups[key]
+    : groups[key].filter(item => {
+        const cat = getField(item.fields.category);
+        return cat === category;
+      })
+})).filter(group => group.items.length > 0);
+---
+
+{filteredGroups.length === 0 ? (
+  <!-- Empty state -->
+  <div class="text-center py-12">
+    <p class="text-mr-gray-500">Ingen medier fundet</p>
+  </div>
+) : (
+  <div class={className}>
+    {filteredGroups.map((group, index) => (
+      <section
+        class={`section ${index % 2 === 0 ? 'bg-mr-black' : 'bg-mr-gray-900/30'}`}
+      >
+        <div class="max-w-6xl mx-auto px-4">
+          <!-- Date Header -->
+          <h2 class="text-2xl font-black mb-6 text-mr-white">
+            {group.label}
+          </h2>
+
+          <!-- Media Grid for this group -->
+          <MediaGrid
+            items={group.items}
+            category="all"
+            layout={layout}
+            columns={columns}
+            gap={gap}
+            className="mb-0"
+          />
+        </div>
+      </section>
+    ))}
+  </div>
+)}

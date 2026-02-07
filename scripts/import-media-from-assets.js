@@ -24,7 +24,7 @@
 
 import pkg from 'contentful-management';
 const { createClient } = pkg;
-import exifr from 'exifr';
+import { exiftool } from 'exiftool-vendored';
 import 'dotenv/config';
 
 const SPACE_ID = process.env.CONTENTFUL_SPACE_ID;
@@ -98,7 +98,7 @@ function getAssetDate(asset) {
 }
 
 /**
- * Extract EXIF metadata from image asset
+ * Extract EXIF metadata from image asset using exiftool-vendored
  * Returns null for videos or if extraction fails
  *
  * Only extracts:
@@ -116,32 +116,48 @@ async function extractExifData(asset) {
   }
 
   try {
-    const exif = await exifr.parse(imageUrl, {
-      // Extract only date and GPS data
-      pick: ['DateTimeOriginal', 'GPSLatitude', 'GPSLongitude', 'GPSLatitudeRef', 'GPSLongitudeRef']
-    });
+    // exiftool.read() works with URLs and returns all tags
+    const tags = await exiftool.read(imageUrl);
 
-    if (!exif) return null;
+    if (!tags) return null;
+
+    // ExifDateTime.toISOString() returns proper ISO 8601 format
+    const dateTaken = tags.DateTimeOriginal
+      ? tags.DateTimeOriginal.toISOString()
+      : null;
+
+    // Format GPS coordinates from GPSLatitude/GPSLongitude
+    const gpsCoordinates = formatGPS(tags);
 
     // Format the data for Contentful
     return {
-      dateTaken: exif.DateTimeOriginal || null,
-      gpsCoordinates: formatGPS(exif)
+      dateTaken,
+      gpsCoordinates
     };
   } catch (error) {
     // Silent fail - many images don't have EXIF data
+    if (process.env.DEBUG_EXIF) {
+      console.error(`    ⚠️  EXIF extraction error:`, error.message);
+    }
     return null;
   }
 }
 
 /**
- * Format GPS coordinates as a string
+ * Format GPS coordinates from exiftool tags
+ *
+ * exiftool-vendored returns GPSLatitude and GPSLongitude as signed decimal degrees
+ * (negative for South/West, positive for North/East)
  */
-function formatGPS(exif) {
-  if (!exif.GPSLatitude || !exif.GPSLongitude) return null;
-  const lat = exif.GPSLatitudeRef === 'S' ? -exif.GPSLatitude : exif.GPSLatitude;
-  const lon = exif.GPSLongitudeRef === 'W' ? -exif.GPSLongitude : exif.GPSLongitude;
-  return `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+function formatGPS(tags) {
+  if (typeof tags.GPSLatitude !== 'number' || typeof tags.GPSLongitude !== 'number') {
+    return null;
+  }
+
+  const lat = tags.GPSLatitude.toFixed(6);
+  const lon = tags.GPSLongitude.toFixed(6);
+
+  return `${lat}, ${lon}`;
 }
 
 /**
@@ -341,3 +357,18 @@ async function importAssetsAsMediaItems() {
 
 // Run the import
 importAssetsAsMediaItems();
+
+// Ensure exiftool process is cleaned up on exit
+process.on('beforeExit', () => {
+  exiftool.end();
+});
+
+process.on('SIGINT', () => {
+  exiftool.end();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  exiftool.end();
+  process.exit(0);
+});

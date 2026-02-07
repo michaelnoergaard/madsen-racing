@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getMediaItems, getVideos, getFeaturedMediaItems, getFeaturedVideos, getPressPhotos, getPageSection } from '../lib/contentful';
 import MediaGrid from '../components/media/MediaGrid.astro';
+import GroupedMediaGrid from '../components/media/GroupedMediaGrid.astro';
 import YouTubePlayer from '../components/media/YouTubePlayer.astro';
 import OptimizedImage from '../components/media/OptimizedImage.astro';
 
@@ -124,30 +125,29 @@ const videosCountText = videos.length > 3 ? `(${videos.length})` : '';
   )}
 
   <!-- Main Gallery -->
-  <section class="section bg-mr-black">
-    <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-2xl font-black mb-6">
-        {getField(galleryHeadingSection.fields.heading)}
-      </h2>
-
-      {mediaItems.length > 0 ? (
-        <MediaGrid
-          items={mediaItems}
-          category="all"
-          layout="grid"
-          columns="auto"
-          gap="medium"
-          className="main-gallery"
-        />
-      ) : (
+  {mediaItems.length > 0 ? (
+    <GroupedMediaGrid
+      items={mediaItems}
+      category="all"
+      layout="grid"
+      columns="3"
+      gap="medium"
+      className="main-gallery"
+    />
+  ) : (
+    <section class="section bg-mr-black">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-black mb-6">
+          {getField(galleryHeadingSection.fields.heading)}
+        </h2>
         <div class="text-center py-12">
           <p class="text-mr-gray-500">
             {getField(emptyMessageSection.fields.description)}
           </p>
         </div>
-      )}
-    </div>
-  </section>
+      </div>
+    </section>
+  )}
 
   <!-- Videos Section -->
   {featuredVideos.length > 0 && (
@@ -200,9 +200,202 @@ const videosCountText = videos.length > 3 ? `(${videos.length})` : '';
     </section>
   )}
 
-  <script>
-    // Gallery filtering functionality
-    document.addEventListener('astro:page-load', () => {
+  <script define:vars={{ mediaItems, featuredMedia }}>
+    // Helper function to get full image URL with Contentful CDN prefix
+    const getFullImageUrl = (url) => {
+      if (!url) return '';
+      return url.startsWith('//') ? `https:${url}` : url;
+    };
+
+    // Helper to get localized field value
+    const getLocalizedField = (field) => {
+      if (!field) return '';
+      if (typeof field === 'object' && !Array.isArray(field)) {
+        return field['da-DK'] || field['en-US'] || '';
+      }
+      return field;
+    };
+
+    // Prepare all images for lightbox navigation
+    const allImages = [
+      ...featuredMedia.map(item => ({
+        id: item.sys.id,
+        url: getFullImageUrl(item.fields.file?.fields?.file?.url || ''),
+        title: getLocalizedField(item.fields.title),
+        description: getLocalizedField(item.fields.description)
+      })),
+      ...mediaItems.map(item => ({
+        id: item.sys.id,
+        url: getFullImageUrl(item.fields.file?.fields?.file?.url || ''),
+        title: getLocalizedField(item.fields.title),
+        description: getLocalizedField(item.fields.description)
+      }))
+    ].filter(img => img.url); // Only include images with URLs
+
+    let currentLightboxIndex = 0;
+
+    function openLightbox(index) {
+      currentLightboxIndex = index;
+      createLightbox(allImages, index);
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      const lightbox = document.getElementById('gallery-lightbox');
+      if (lightbox) {
+        lightbox.remove();
+        document.body.style.overflow = '';
+      }
+    }
+
+    function navigateLightbox(direction) {
+      currentLightboxIndex += direction;
+      if (currentLightboxIndex < 0) currentLightboxIndex = allImages.length - 1;
+      if (currentLightboxIndex >= allImages.length) currentLightboxIndex = 0;
+      updateLightboxImage();
+    }
+
+    function goToImage(index) {
+      currentLightboxIndex = index;
+      updateLightboxImage();
+    }
+
+    function createLightbox(images, index) {
+      // Check if lightbox already exists
+      let lightbox = document.getElementById('gallery-lightbox');
+      if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'gallery-lightbox';
+        document.body.appendChild(lightbox);
+      }
+
+      // Render lightbox content
+      lightbox.innerHTML = `
+        <div class="lightbox-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm">
+          <!-- Close button -->
+          <button
+            id="lightbox-close"
+            class="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/75 rounded-full p-2 transition-all duration-300 z-10"
+            aria-label="Luk lightbox"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+
+          <!-- Navigation buttons -->
+          ${images.length > 1 ? `
+            <button
+              id="lightbox-prev"
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 rounded-full p-2 transition-all duration-300 z-10"
+              aria-label="Forrige billede"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button
+              id="lightbox-next"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/50 hover:bg-black/75 rounded-full p-2 transition-all duration-300 z-10"
+              aria-label="Næste billede"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          ` : ''}
+
+          <!-- Image container -->
+          <div class="max-w-7xl max-h-full p-4 flex flex-col items-center" id="lightbox-content">
+            <!-- Content will be injected by updateLightboxImage() -->
+          </div>
+
+          <!-- Thumbnails strip -->
+          ${images.length > 1 ? `
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 p-2 rounded-lg max-w-[90vw] overflow-x-auto">
+              ${images.map((img, i) => `
+                <button
+                  class="lightbox-thumb w-16 h-16 rounded overflow-hidden border-2 transition-all duration-300 flex-shrink-0 ${i === index ? 'border-mr-yellow scale-110' : 'border-transparent hover:border-gray-500'}"
+                  data-index="${i}"
+                  aria-label="Gå til billede ${i + 1}"
+                >
+                  <img src="${img.url}" alt="${img.title || `Thumbnail ${i + 1}`}" class="w-full h-full object-cover" loading="lazy" />
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      // Add event listeners
+      document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+
+      const prevBtn = document.getElementById('lightbox-prev');
+      const nextBtn = document.getElementById('lightbox-next');
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(-1); });
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(1); });
+
+      // Thumbnail clicks
+      document.querySelectorAll('.lightbox-thumb').forEach(thumb => {
+        thumb.addEventListener('click', (e) => {
+          e.stopPropagation();
+          goToImage(parseInt(thumb.dataset.index));
+        });
+      });
+
+      // Close on backdrop click
+      lightbox.querySelector('.lightbox-backdrop').addEventListener('click', (e) => {
+        if (e.target === lightbox.querySelector('.lightbox-backdrop')) {
+          closeLightbox();
+        }
+      });
+
+      // Initial image render
+      updateLightboxImage();
+    }
+
+    function updateLightboxImage() {
+      const content = document.getElementById('lightbox-content');
+      const image = allImages[currentLightboxIndex];
+      if (!content || !image) return;
+
+      content.innerHTML = `
+        <img
+          src="${image.url}"
+          alt="${image.title || 'Galleribillede'}"
+          class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-2xl"
+          id="lightbox-image"
+        />
+      `;
+
+      // Update thumbnail highlights
+      document.querySelectorAll('.lightbox-thumb').forEach((thumb, i) => {
+        if (i === currentLightboxIndex) {
+          thumb.classList.add('border-mr-yellow', 'scale-110');
+          thumb.classList.remove('border-transparent');
+        } else {
+          thumb.classList.remove('border-mr-yellow', 'scale-110');
+          thumb.classList.add('border-transparent');
+        }
+      });
+    }
+
+    // Initialize click handlers
+    function initGallery() {
+      const mediaItems = document.querySelectorAll('.media-item[data-media-type="image"]');
+
+      mediaItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          // Find the image in allImages array by matching the ID
+          const itemId = item.dataset.mediaId || '';
+          const index = allImages.findIndex(img => img.id === itemId);
+          if (index !== -1) {
+            openLightbox(index);
+          }
+        });
+      });
+
+      // Gallery filtering functionality
       const filters = document.querySelectorAll('.category-filter');
       const gallery = document.querySelector('.main-gallery');
 
@@ -218,10 +411,39 @@ const videosCountText = videos.length > 3 ? `(${videos.length})` : '';
           e.target.classList.remove('bg-mr-gray-800', 'text-mr-gray-400');
           e.target.classList.add('bg-mr-yellow', 'text-mr-black');
 
-          // Filter gallery items (this would need the media items to be client-side or using Alpine.js)
+          // Filter gallery items
           console.log(`Filtering by category: ${category}`);
         });
       });
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initGallery);
+    } else {
+      // DOM is already ready
+      initGallery();
+    }
+
+    // Also initialize on Astro page load (for SPA navigation)
+    document.addEventListener('astro:page-load', initGallery);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const lightbox = document.getElementById('gallery-lightbox');
+      if (!lightbox) return;
+
+      switch (e.key) {
+        case 'Escape':
+          closeLightbox();
+          break;
+        case 'ArrowLeft':
+          navigateLightbox(-1);
+          break;
+        case 'ArrowRight':
+          navigateLightbox(1);
+          break;
+      }
     });
   </script>
 </Layout>

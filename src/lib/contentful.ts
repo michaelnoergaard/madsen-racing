@@ -418,7 +418,81 @@ export function daysUntil(dateString: string): number {
 /**
  * Get image URL from Contentful asset
  */
-export function getImageUrl(asset: unknown, width?: number, quality = 80): string {
+
+// Danish month names
+const DANISH_MONTHS = [
+  'Januar', 'Februar', 'Marts', 'April', 'Maj', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'December'
+];
+
+/**
+ * Format year-month as Danish text (e.g., "Februar 2025")
+ */
+export function formatYearMonthDanish(dateString: string): string {
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = DANISH_MONTHS[date.getMonth()];
+  return `${month} ${year}`;
+}
+
+/**
+ * Group media items by year-month
+ * Returns object with keys like "2025-02" and arrays of items
+ */
+export function groupMediaByYearMonth(items: MediaItemEntry[]): Record<string, MediaItemEntry[]> {
+  const groups: Record<string, MediaItemEntry[]> = {};
+
+  items.forEach(item => {
+    const date = new Date(item.fields.date);
+    const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!groups[yearMonth]) {
+      groups[yearMonth] = [];
+    }
+    groups[yearMonth].push(item);
+  });
+
+  return groups;
+}
+
+/**
+ * Get sorted year-month keys (newest first)
+ */
+export function getSortedYearMonthKeys(groups: Record<string, MediaItemEntry[]>): string[] {
+  return Object.keys(groups).sort().reverse();
+}
+
+/**
+ * Get localized field value with fallback
+ * Handles both localized (object with locale keys) and non-localized (direct value) fields
+ */
+export function getField(field: unknown): string {
+  if (!field) return '';
+  if (typeof field === 'string') return field;
+  if (typeof field === 'number') return String(field);
+  if (typeof field === 'object' && !Array.isArray(field) && field !== null) {
+    // Localized field - try da-DK first, then en-US, then any key
+    const localized = field as Record<string, string>;
+    return localized['da-DK'] || localized['en-US'] || Object.values(localized)[0] || '';
+  }
+  return '';
+}
+
+/**
+ * Get localized array field (e.g., tags)
+ */
+export function getFieldArray(field: unknown): string[] {
+  if (!field) return [];
+  if (Array.isArray(field)) return field;
+  if (typeof field === 'object' && field !== null) {
+    // Localized field - try da-DK first, then en-US
+    const localized = field as Record<string, string[]>;
+    return localized['da-DK'] || localized['en-US'] || [];
+  }
+  return [];
+}
+
+export function getImageUrl(asset: unknown, width?: number, quality = 85): string {
   if (!asset || typeof asset !== 'object') return '';
 
   const assetObj = asset as { fields?: { file?: { url?: string } } };
@@ -429,7 +503,16 @@ export function getImageUrl(asset: unknown, width?: number, quality = 80): strin
   let imageUrl = url.startsWith('//') ? `https:${url}` : url;
 
   if (width) {
-    imageUrl += `?w=${width}&q=${quality}&fm=webp`;
+    // Check if the image is HEIC/HEIF format
+    const isHeic = imageUrl.toLowerCase().includes('.heic') || imageUrl.toLowerCase().includes('.heif');
+
+    if (isHeic) {
+      // Use JPG conversion for HEIC files (better browser support than original HEIC)
+      imageUrl += `?w=${width}&q=${quality}&fm=jpg`;
+    } else {
+      // Use WebP for other formats (JPG, PNG, GIF, etc.)
+      imageUrl += `?w=${width}&q=${quality}&fm=webp`;
+    }
   }
 
   return imageUrl;

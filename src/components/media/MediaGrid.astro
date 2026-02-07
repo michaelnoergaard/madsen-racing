@@ -1,5 +1,6 @@
 ---
 import MediaItem from './MediaItem.astro';
+import { getField } from '../../lib/contentful';
 
 export interface Props {
   items: any[];
@@ -9,6 +10,7 @@ export interface Props {
   gap?: 'small' | 'medium' | 'large';
   className?: string;
   loading?: 'lazy' | 'eager';
+  showSkeletons?: boolean;
 }
 
 const {
@@ -19,6 +21,7 @@ const {
   gap = 'medium',
   className = '',
   loading = 'lazy',
+  showSkeletons = false,
 } = Astro.props;
 
 const columnClasses = {
@@ -42,7 +45,7 @@ const layoutClasses = {
 // Filter items by category if specified
 const filteredItems = category === 'all'
   ? items
-  : items.filter(item => item.fields.category === category);
+  : items.filter(item => getField(item.fields.category) === category);
 
 // Determine grid auto-rows for different item types
 const gridAutoRows = layout === 'grid' ? 'grid-rows-[auto]' : '';
@@ -81,9 +84,9 @@ const getItemSizeClass = (index: number, type: string) => {
         key={item.sys.id}
         item={item}
         size={getItemSizeClass(index, item.fields.type)}
-        showTitle={true}
-        showDate={true}
-        showMeta={true}
+        showTitle={false}
+        showDate={false}
+        showMeta={false}
         loading={loading}
         className="transform transition-all duration-300 hover:scale-105"
       />
@@ -91,7 +94,7 @@ const getItemSizeClass = (index: number, type: string) => {
   )}
 
   <!-- Loading skeleton for more items -->
-  {filteredItems.length > 0 && loading === 'lazy' && (
+  {filteredItems.length > 0 && showSkeletons && (
     <>
       <div class="skeleton-item col-span-1 row-span-2 aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
       <div class="skeleton-item col-span-1 row-span-1 aspect-square bg-gray-200 rounded-lg animate-pulse"></div>
